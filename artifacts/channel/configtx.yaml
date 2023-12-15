@@ -1,0 +1,280 @@
+Organizations:
+
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/chainhealth.com/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+
+    - &Pharmacy
+        Name: Pharmacy
+        ID: PharmacyMSP
+        MSPDir: crypto-config/peerOrganizations/pharmacy.chainhealth.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('PharmacyMSP.admin', 'PharmacyMSP.peer', 'PharmacyMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('PharmacyMSP.admin', 'PharmacyMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('PharmacyMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('PharmacyMSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.pharmacy.chainhealth.com
+              Port: 7051
+
+    - &Insurance
+        Name: Insurance
+        ID: InsuranceMSP
+        MSPDir: crypto-config/peerOrganizations/insurance.chainhealth.com/msp
+
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('InsuranceMSP.admin', 'InsuranceMSP.peer', 'InsuranceMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('InsuranceMSP.admin', 'InsuranceMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('InsuranceMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('InsuranceMSP.peer')"
+
+        AnchorPeers:
+            - Host: peer0.insurance.chainhealth.com
+              Port: 9051
+
+    - &Patient
+        Name: Patient
+        ID: PatientMSP
+        MSPDir: crypto-config/peerOrganizations/patient.chainhealth.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('PatientMSP.admin', 'PatientMSP.peer', 'PatientMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('PatientMSP.admin', 'PatientMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('PatientMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('PatientMSP.peer')"
+
+        AnchorPeers:
+            - Host: peer0.patient.chainhealth.com
+              Port: 12051
+
+
+
+#   Capabilities This is a new concept as of v1.1.0 and should not be utilized
+#   in mixed networks with v1.0.x peers and orderers. Capabilities define features
+#   which must be present in a fabric binary for that binary to safely participate
+#   in the fabric network.  For instance, if a new MSP type is added, newer binaries
+#   might recognize and validate the signatures from this type, while older
+#   binaries without this support would be unable to validate those
+#   transactions.  This could lead to different versions of the fabric binaries
+#   having different world states.  Instead, defining a capability for a channel
+#   informs those binaries without this capability that they must cease
+#   processing transactions until they have been upgraded.  For v1.0.x if any
+#   capabilities are defined (including a map with all capabilities turned off)
+#   then the v1.0.x peer will deliberately crash.
+Capabilities:
+    # Channel capabilities apply to both the orderers and the peers and must be
+    # supported by both.
+    # Set the value of the capability to true to require it.
+    Channel: &ChannelCapabilities
+        # V2_0 capability ensures that orderers and peers behave according
+        # to v2.0 channel capabilities. 
+        V2_0: true
+
+    # Orderer capabilities apply only to the orderers, and may be safely
+    # used with prior release peers.
+    # Set the value of the capability to true to require it.
+    Orderer: &OrdererCapabilities
+        V2_0: true
+
+    # Application capabilities apply only to the peer network, and may be safely
+    # used with prior release orderers.
+    # Set the value of the capability to true to require it.
+    Application: &ApplicationCapabilities
+        V2_0: true
+
+
+
+
+#   The application section defines the values to encode into a config transaction or
+#   genesis block for application related parameters
+Application: &ApplicationDefaults
+
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+
+    # this acts as a reference. think of it as a pointer.
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+
+#   The orderer defines the values to encode into a config transaction or
+#   genesis block for orderer related parameters
+Orderer: &OrdererDefaults
+
+    # Orderer Type: The orderer implementation to start
+    OrdererType: etcdraft
+    EtcdRaft:
+        Consenters:
+        - Host: orderer.chainhealth.com
+          Port: 7050
+          ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer.chainhealth.com/tls/server.crt
+          ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer.chainhealth.com/tls/server.crt
+
+    Addresses:
+        - orderer.chainhealth.com:7050
+
+    # amount of time to wait before creating a batch
+    BatchTimeout: 2s
+
+    # Controls the number of messages batched into a block
+    BatchSize:
+
+        # maximum number of messages to permit in a batch
+        MaxMessageCount: 10
+
+        # absolute maximum number of bytes allowed for the serialized messages in a batch.
+        AbsoluteMaxBytes: 99 MB
+
+        # preferred maximum number of bytes allowed for the serialized messages
+        # in a batch. A message larger than the preferred max bytes will result
+        # in a batch larger than preferred max bytes.
+        PreferredMaxBytes: 512 KB
+
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        # BlockValidation specifies what signatures must be included in the block
+        # from the orderer for the peer to validate it.
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+
+#   the channel section defines the values to encode into a config transaction or
+#   genesis block for channel related parameters.
+Channel: &ChannelDefaults
+    Policies:
+        # Who may invoke the 'Deliver' API
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        # Who may invoke the 'Broadcast' API
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        # By default, who may modify elements at this config level
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    Capabilities:
+        <<: *ChannelCapabilities
+
+
+
+#   Different configuration profiles may be encoded here to be specified
+#   as parameters to the configtxgen tool
+Profiles:
+    BasicChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Pharmacy
+                - *Insurance
+                - *Patient
+            Capabilities:
+                <<: *ApplicationCapabilities
+
+    OrdererGenesis:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: etcdraft
+            EtcdRaft:
+                Consenters:
+                - Host: orderer.chainhealth.com
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer.chainhealth.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer.chainhealth.com/tls/server.crt
+                - Host: orderer2.chainhealth.com
+                  Port: 8050
+                  ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer2.chainhealth.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer2.chainhealth.com/tls/server.crt
+                - Host: orderer3.chainhealth.com
+                  Port: 9050
+                  ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/tls/server.crt
+            Addresses:
+                - orderer.chainhealth.com:7050
+                - orderer2.chainhealth.com:8050
+                - orderer3.chainhealth.com:9050
+
+            Organizations:
+            - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                - *Pharmacy
+                - *Insurance
+                - *Patient

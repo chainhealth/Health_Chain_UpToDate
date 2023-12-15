@@ -1,0 +1,47 @@
+# EnableNodeOUs: When set to `true`, it indicates that Node Org Units are enabled,
+# allowing for separate OUs for administrators, peers, and clients.
+# The organization has distinct OUs for administrators, peers, and clients.
+# This enables finer-grained control over cryptographic materials and permissions for each node type.
+# Separate cryptographic keys and certificates can be used for administrators, peers, and clients.
+
+
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: chainhealth.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+      - Hostname: orderer2
+      - Hostname: orderer3
+
+PeerOrgs:
+  - Name: Pharmacy
+    Domain: pharmacy.chainhealth.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+      SANS:
+        - "localhost"
+    Users:
+      Count: 1
+
+  - Name: Insurance
+    Domain: insurance.chainhealth.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+      SANS:
+        - "localhost"
+    Users:
+      Count: 1
+
+  - Name: Patient
+    Domain: patient.chainhealth.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+      SANS:
+        - "localhost"
+    Users:
+      Count: 1
