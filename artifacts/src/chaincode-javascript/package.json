@@ -1,7 +1,7 @@
 {
-    "name": "asset-transfer-basic",
+    "name": "health_chain",
     "version": "1.0.0",
-    "description": "Asset-Transfer-Basic contract implemented in JavaScript",
+    "description": "chaincode for health_chain",
     "main": "index.js",
     "engines": {
         "node": ">=12",
@@ -23,12 +23,12 @@
         "sort-keys-recursive": "^2.1.10"
     },
     "devDependencies": {
-        "chai": "^4.1.2",
-        "eslint": "^4.19.1",
-        "mocha": "^8.0.1",
-        "nyc": "^14.1.1",
-        "sinon": "^6.0.0",
-        "sinon-chai": "^3.2.0"
+        "chai": "^4.3.10",
+        "eslint": "^8.56.0",
+        "mocha": "^10.2.0",
+        "nyc": "^15.1.0",
+        "sinon": "^17.0.1",
+        "sinon-chai": "^3.7.0"
     },
     "nyc": {
         "exclude": [
