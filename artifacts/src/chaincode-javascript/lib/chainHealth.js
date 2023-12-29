@@ -206,7 +206,7 @@ module.exports = EHRContract;
 // Sample patient records for ledger initialization
 const patientRecords = [
   {
-    patientID: "PATIENT2",
+    patientID: "PATIENT1",
     personalInformation: {
       firstName: "Seifeldin",
       lastName: "Sami",
@@ -241,7 +241,7 @@ const patientRecords = [
     prescription: [],
   },
   {
-    patientID: "PATIENT3",
+    patientID: "PATIENT2",
     personalInformation: {
       firstName: "Mina",
       lastName: "Saad",
