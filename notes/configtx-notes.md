@@ -58,9 +58,6 @@ In the provided snippet, you have a set of policies specified for a certain conf
 <br>
 <br>
 <br>
-<br>
-<br>
-<br>
 
 
 
