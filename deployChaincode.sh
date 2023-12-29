@@ -212,28 +212,28 @@ chaincodeQuery() {
 
 getPatientRecordInsurance() {
     setGlobalsForPeer0insurance
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Seifeldin", "Sami", "seif@example.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Seifeldin", "Sami", "seif@gmail.com"]}'
     
     echo "===================== Chaincode getPatientRecord Insurance Finished ===================== "
 }
 
 getPatientRecordPharmacy() {
     setGlobalsForPeer0pharmacy
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Mina", "Saad", "mina@example.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Mina", "Saad", "mina@gmail.com"]}'
     
     echo "===================== Chaincode getPatientRecord Pharmacy Finished ===================== "
 }
 
 getPatientRecordPatient() {
     setGlobalsForPeer0patient
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Peter", "Sami", "peter@example.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Seifeldin", "Sami", "seif@gmail.com"]}'
     
     echo "===================== Chaincode getPatientRecord Patient Finished ===================== "
 }
 
 getPatientRecordPatientError() {
     setGlobalsForPeer0patient
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Someone", "Sami", "someone@example.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Someone", "Sami", "someone@gmail.com"]}'
     
     echo "===================== Chaincode getPatientRecord Patient Error Finished ===================== "
 }
@@ -247,14 +247,14 @@ writePatientPrescription() {
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
         --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_patient_CA \
-        -c '{"function": "writePatientPrescription","Args":["Seifeldin", "Sami", "seif@example.com", "Panadol,Vitamin A,Vitamin C"]}'
+        -c '{"function": "writePatientPrescription","Args":["Seifeldin", "Sami", "seif@gmail.com", "Panadol,Vitamin A,Vitamin C"]}'
 
     echo "===================== Chaincode writePatientPrescription Finished ===================== "
 }
 
 readPatientPrescription() {
     setGlobalsForPeer0insurance
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "readPatientPrescription","Args":["Seifeldin", "Sami", "seif@example.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "readPatientPrescription","Args":["Seifeldin", "Sami", "seif@gmail.com"]}'
     
     echo "===================== Chaincode readPatientPrescription Finished ===================== "
 }
