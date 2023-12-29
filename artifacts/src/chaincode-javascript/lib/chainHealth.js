@@ -6,9 +6,11 @@ const { Contract } = require("fabric-contract-api");
 const ClientIdentity = require("fabric-shim").ClientIdentity;
 
 class EHRContract extends Contract {
+  // Initialization method for ledger data
   async InitLedger(ctx) {
     try {
       for (const patientRecord of patientRecords) {
+        // Storing patient record in the ledger
         await ctx.stub.putState(
           patientRecord.patientID,
           Buffer.from(stringify(sortKeysRecursive(patientRecord)))
@@ -19,6 +21,7 @@ class EHRContract extends Contract {
     }
   }
 
+  // Method to retrieve all records from the ledger
   async getAllRecords(ctx) {
     try {
       // range query with empty string for startKey and endKey does an open-ended query of all assets in the chaincode namespace.
@@ -30,6 +33,7 @@ class EHRContract extends Contract {
     }
   }
 
+  // Private method to convert iterator data to JSON
   async _getIteratorData(iterator) {
     const allRecords = [];
     let result = await iterator.next();
@@ -44,7 +48,7 @@ class EHRContract extends Contract {
     return JSON.stringify(allRecords);
   }
 
-  // Private method using JS private naming convention
+  // Private method to convert string to JSON
   _changeToJSON(strValue) {
     let temp;
     try {
@@ -55,7 +59,7 @@ class EHRContract extends Contract {
     return temp;
   }
 
-  // Private method using JS private naming convention
+  // Private method to retrieve a specific record
   async _getRecord(ctx, recordNumber) {
     try {
       const recordID = `PATIENT${recordNumber}`;
@@ -66,6 +70,7 @@ class EHRContract extends Contract {
     }
   }
 
+  // Method to query a specific record
   async queryRecord(ctx, recordNumber) {
     const asset = await this._getRecord(ctx, recordNumber);
     if (asset instanceof Error) {
@@ -77,13 +82,14 @@ class EHRContract extends Contract {
     return asset.toString();
   }
 
-  // Private method using JS private naming convention
+  // Private method to get MSP ID from the client identity
   _getMSPID(ctx) {
     const clientIdentity = new ClientIdentity(ctx.stub);
     const clientMSP = clientIdentity.getMSPID();
     return clientMSP;
   }
 
+  // Private method to retrieve patient record data based on personal information
   async _getPatientRecordData(ctx, firstName, lastName, email) {
     let queryString = {};
     queryString.selector = {
@@ -97,6 +103,7 @@ class EHRContract extends Contract {
     return patientRecordJSON;
   }
 
+  // Method to get patient record based on personal information, with access control
   async getPatientRecord(ctx, firstName, lastName, email) {
     const clientMSP = this._getMSPID(ctx);
     const patientDataJSON = await this._getPatientRecordData(
@@ -109,6 +116,7 @@ class EHRContract extends Contract {
       throw new Error("No Record for this patient!");
     }
 
+    // Access control based on MSP ID
     if (clientMSP === "InsuranceMSP") {
       const patientInsuranceInformation = patientDataJSON.insuranceInformation;
       return JSON.stringify(patientInsuranceInformation);
@@ -122,6 +130,7 @@ class EHRContract extends Contract {
     }
   }
 
+  // Method to read patient prescription
   async readPatientPrescription(ctx, firstName, lastName, email) {
     const patientDataJSON = await this._getPatientRecordData(
       ctx,
@@ -139,11 +148,13 @@ class EHRContract extends Contract {
     return JSON.stringify(patientDataJSON.prescription);
   }
 
+  // Private method to create an array from prescription string
   _createPrescriptionArray(prescription) {
     const prescriptionArray = prescription.split(",");
     return prescriptionArray;
   }
 
+  // Private method to update patient prescription
   async _updatePrescription(ctx, patientDataJSON, prescription) {
     try {
       const prescriptionArray = this._createPrescriptionArray(prescription);
@@ -157,6 +168,7 @@ class EHRContract extends Contract {
     }
   }
 
+  // Method to write patient prescription, with access control
   async writePatientPrescription(
     ctx,
     firstName,
@@ -188,8 +200,10 @@ class EHRContract extends Contract {
   }
 }
 
+// Exporting the EHRContract class
 module.exports = EHRContract;
 
+// Sample patient records for ledger initialization
 const patientRecords = [
   {
     patientID: "PATIENT2",
