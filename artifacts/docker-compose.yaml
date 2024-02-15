@@ -11,7 +11,7 @@ networks:
 
 services:
   ca-pharmacy:
-    image: hyperledger/fabric-ca
+    image: hyperledger/fabric-ca:1.5.8
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca.pharmacy.chainhealth.com
@@ -32,7 +32,7 @@ services:
       - test
 
   ca-insurance:
-    image: hyperledger/fabric-ca
+    image: hyperledger/fabric-ca:1.5.8
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca.insurance.chainhealth.com
@@ -53,7 +53,7 @@ services:
       - test
 
   ca-patient:
-    image: hyperledger/fabric-ca
+    image: hyperledger/fabric-ca:1.5.8
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca.patient.chainhealth.com
@@ -75,7 +75,7 @@ services:
 
   orderer.chainhealth.com:
     container_name: orderer.chainhealth.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger/fabric-orderer:2.5.4
     dns_search: .
     environment:
       - ORDERER_GENERAL_LOGLEVEL=info
@@ -110,7 +110,7 @@ services:
 
   orderer2.chainhealth.com:
     container_name: orderer2.chainhealth.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger/fabric-orderer:2.5.4
     dns_search: .
     environment:
       - ORDERER_GENERAL_LOGLEVEL=info
@@ -145,7 +145,7 @@ services:
 
   orderer3.chainhealth.com:
     container_name: orderer3.chainhealth.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger/fabric-orderer:2.5.4
     dns_search: .
     environment:
       - ORDERER_GENERAL_LOGLEVEL=info
@@ -180,7 +180,7 @@ services:
 
   couchdb0:
     container_name: couchdb0
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -191,7 +191,7 @@ services:
 
   couchdb1:
     container_name: couchdb1
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -202,7 +202,7 @@ services:
 
   couchdb2:
     container_name: couchdb2
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -213,7 +213,7 @@ services:
 
   couchdb3:
     container_name: couchdb3
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -222,10 +222,9 @@ services:
     networks:
       - test
 
-  
   couchdb4:
     container_name: couchdb4
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=
@@ -234,10 +233,9 @@ services:
     networks:
       - test
 
-  
   couchdb5:
     container_name: couchdb5
-    image: hyperledger/fabric-couchdb
+    image: hyperledger/fabric-couchdb:0.4.22
     environment:
       - COUCHDB_USER=
       - COUCHDB_PASSWORD=

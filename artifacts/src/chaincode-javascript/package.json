@@ -14,9 +14,9 @@
     "author": "Health_Chain",
     "license": "Apache-2.0",
     "dependencies": {
-        "fabric-contract-api": "^2.5.4",
-        "fabric-shim": "^2.5.4",
-        "json-stringify-deterministic": "^1.0.12",
-        "sort-keys-recursive": "^2.1.10"
+        "fabric-contract-api": "2.5.4",
+        "fabric-shim": "2.5.4",
+        "json-stringify-deterministic": "1.0.12",
+        "sort-keys-recursive": "2.1.10"
     }
 }
