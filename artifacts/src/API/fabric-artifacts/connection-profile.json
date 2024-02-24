@@ -1,0 +1,130 @@
+{
+    "name": "chainhealth",
+    "version": "0.0.1",
+    "organizations": {
+        "Pharmacy": {
+            "mspid": "PharmacyMSP",
+            "peers": [
+                "peer0.pharmacy.chainhealth.com",
+                "peer1.pharmacy.chainhealth.com"
+            ],
+            "certificateAuthorities": [
+                "ca.pharmacy.chainhealth.com"
+            ]
+        },
+        "Insurance": {
+            "mspid": "InsuranceMSP",
+            "peers": [
+                "peer0.insurance.chainhealth.com",
+                "peer1.insurance.chainhealth.com"
+            ],
+            "certificateAuthorities": [
+                "ca.insurance.chainhealth.com"
+            ]
+        },
+        "Patient": {
+            "mspid": "PatientMSP",
+            "peers": [
+                "peer0.patient.chainhealth.com",
+                "peer1.patient.chainhealth.com"
+            ],
+            "certificateAuthorities": [
+                "ca.patient.chainhealth.com"
+            ]
+        }
+    },
+    "peers": {
+        "peer0.pharmacy.chainhealth.com": {
+            "url": "grpcs://localhost:7051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer0.pharmacy.chainhealth.com/msp/tlscacerts/tlsca.pharmacy.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.pharmacy.chainhealth.com",
+                "hostnameOverride": "peer0.pharmacy.chainhealth.com"
+            }
+        },
+        "peer1.pharmacy.chainhealth.com": {
+            "url": "grpcs://localhost:8051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer1.pharmacy.chainhealth.com/msp/tlscacerts/tlsca.pharmacy.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1.pharmacy.chainhealth.com",
+                "hostnameOverride": "peer1.pharmacy.chainhealth.com"
+            }
+        },
+        "peer0.insurance.chainhealth.com": {
+            "url": "grpcs://localhost:9051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer0.insurance.chainhealth.com/msp/tlscacerts/tlsca.insurance.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.insurance.chainhealth.com",
+                "hostnameOverride": "peer0.insurance.chainhealth.com"
+            }
+        },
+        "peer1.insurance.chainhealth.com": {
+            "url": "grpcs://localhost:10051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer1.insurance.chainhealth.com/msp/tlscacerts/tlsca.insurance.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1.insurance.chainhealth.com",
+                "hostnameOverride": "peer1.insurance.chainhealth.com"
+            }
+        },
+        "peer0.patient.chainhealth.com": {
+            "url": "grpcs://localhost:12051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer0.patient.chainhealth.com/msp/tlscacerts/tlsca.patient.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.patient.chainhealth.com",
+                "hostnameOverride": "peer0.patient.chainhealth.com"
+            }
+        },
+        "peer1.patient.chainhealth.com": {
+            "url": "grpcs://localhost:13051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer1.patient.chainhealth.com/msp/tlscacerts/tlsca.patient.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1.patient.chainhealth.com",
+                "hostnameOverride": "peer1.patient.chainhealth.com"
+            }
+        }
+    },
+    "certificateAuthorities": {
+        "ca.pharmacy.chainhealth.com": {
+            "url": "https://localhost:7054",
+            "caName": "ca.pharmacy.chainhealth.com",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICczCCAhmgAwIBAgIQQKT6sxCVMK4U3WztU4vZWTAKBggqhkjOPQQDAjCBgzEL\nMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG\ncmFuY2lzY28xITAfBgNVBAoTGHBoYXJtYWN5LmNoYWluaGVhbHRoLmNvbTEkMCIG\nA1UEAxMbY2EucGhhcm1hY3kuY2hhaW5oZWFsdGguY29tMB4XDTI0MDIyMzIyMDAw\nMFoXDTM0MDIyMDIyMDAwMFowgYMxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxp\nZm9ybmlhMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMSEwHwYDVQQKExhwaGFybWFj\neS5jaGFpbmhlYWx0aC5jb20xJDAiBgNVBAMTG2NhLnBoYXJtYWN5LmNoYWluaGVh\nbHRoLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABO/1l6nb//rDo5Q0CPu5\nPPkpm7uHZeRUXrP/lH6nl30nnRqdqhIE54xMG6XDUWRvwDqIA85SD7TNRbWKsQrg\n4RGjbTBrMA4GA1UdDwEB/wQEAwIBpjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYB\nBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zApBgNVHQ4EIgQgL5Olzt1943wPvSACucu0\npEBdzC29gh0tHCq6+XRxlpowCgYIKoZIzj0EAwIDSAAwRQIgYznFNBF5yozOC7Yp\nmKXEZvP/lwKdDRoZsVtsPvWLuzICIQCQ6F3qcOr6uZJ2QKIEu6uk6TKBZMqkhGn/\nSb2pVKeZbQ==\n-----END CERTIFICATE-----"
+            },
+            "httpOptions": {
+                "verify": false
+            }
+        },
+        "ca.insurance.chainhealth.com": {
+            "url": "https://localhost:8054",
+            "caName": "ca.insurance.chainhealth.com",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/insurance.chainhealth.com/ca/ca.insurance.chainhealth.com-cert.pem"
+            },
+            "httpOptions": {
+                "verify": false
+            }
+        },
+        "ca.patient.chainhealth.com": {
+            "url": "https://localhost:12054",
+            "caName": "ca.patient.chainhealth.com",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/ca/ca.patient.chainhealth.com-cert.pem"
+            },
+            "httpOptions": {
+                "verify": false
+            }
+        }
+    }
+}
