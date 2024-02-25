@@ -27,7 +27,8 @@ class EHRContract extends Contract {
       // range query with empty string for startKey and endKey does an open-ended query of all assets in the chaincode namespace.
       const iterator = await ctx.stub.getStateByRange("", "");
       const recordData = await this._getIteratorData(iterator);
-      return recordData;
+      const mspID = this._getMSPID(ctx);
+      return `${recordData} ${mspID}`;
     } catch (error) {
       throw new Error("Can't get all records!");
     }

@@ -2,10 +2,79 @@ const { Gateway, Wallets } = require("fabric-network");
 const FabricCAServices = require("fabric-ca-client");
 const fs = require("fs");
 const path = require("path");
+var morgan = require("morgan");
 const express = require("express");
 const app = express();
 
 const port = 3000;
+
+function readPemFile(filePath) {
+  const certificate = fs.readFileSync(filePath, { encoding: "utf8" });
+  return certificate;
+}
+
+async function enrollPeer() {
+  try {
+    // load the network configuration
+    const ccpPath = path.resolve(
+      __dirname,
+      "fabric-artifacts",
+      "connection-profile.json"
+    );
+    let ccp = JSON.parse(fs.readFileSync(ccpPath, "utf8"));
+
+    // Extract CA information for the peer
+    const peerInfo = ccp.peers["peer0.pharmacy.chainhealth.com"];
+    const caInfo = ccp.certificateAuthorities[peerInfo.caName];
+
+    const tempPath = path.resolve(
+      __dirname,
+      "fabric-artifacts",
+      caInfo.tlsCACerts.path
+    );
+    const caTLSCAPath = String(tempPath).replace("src/", "");
+    const caTLSCACerts = fs.readFileSync(caTLSCAPath, "utf8");
+    const ca = new FabricCAServices(caInfo.url, {
+      trustedRoots: caTLSCACerts,
+      verify: false,
+      caName: caInfo.caName,
+    });
+
+    // Create a new file system based wallet for managing identities.
+    const walletPath = path.join(process.cwd(), "wallet");
+    const wallet = await Wallets.newFileSystemWallet(walletPath);
+
+    // Check if peer identity already exists in the wallet
+    const identity = await wallet.get("peer0");
+    if (identity) {
+      console.log(
+        'An identity for the peer "peer0" already exists in the wallet'
+      );
+      return;
+    }
+
+    console.log("Error test 1");
+    const enrollment = await ca.enroll({
+      enrollmentID: "admin",
+      enrollmentSecret: "adminpw",
+    });
+    console.log("Error test 2");
+    const x509Identity = {
+      credentials: {
+        certificate: enrollment.certificate,
+        privateKey: enrollment.key.toBytes(),
+      },
+      mspId: "PharmacyMSP", // Update this with your actual MSP ID
+      type: "X.509",
+    };
+    await wallet.put("peer0", x509Identity);
+    console.log(
+      'Successfully enrolled peer "peer0" and imported it into the wallet'
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function enrollAdmin() {
   try {
@@ -19,7 +88,8 @@ async function enrollAdmin() {
 
     // Create a new CA client for interacting with the CA.
     const caInfo = ccp.certificateAuthorities["ca.pharmacy.chainhealth.com"];
-    const caTLSCACerts = caInfo.tlsCACerts.pem;
+    const caTLSCAPath = caInfo.tlsCACerts.path;
+    const caTLSCACerts = readPemFile(caTLSCAPath);
     const ca = new FabricCAServices(
       caInfo.url,
       { trustedRoots: caTLSCACerts, verify: false },
@@ -78,7 +148,7 @@ async function connectToNetwork() {
   const gateway = new Gateway();
   await gateway.connect(connectionProfile, {
     wallet,
-    identity: "admin",
+    identity: "peer0",
     discovery: { enabled: true, asLocalhost: true },
   });
 
@@ -96,13 +166,15 @@ async function getAllRecords(contract) {
   return result;
 }
 
+app.use(morgan("tiny"));
+
 app.get("/getAllRecords", async (req, res) => {
   try {
     await enrollAdmin();
+    await enrollPeer();
     const contract = await connectToNetwork();
     const result = await getAllRecords(contract);
     res.send(result.toString());
-    console.log("Sent data!");
   } catch (error) {
     console.error(`Failed to evaluate transaction: ${error}`);
     res.status(500).json({ error: error.toString() });

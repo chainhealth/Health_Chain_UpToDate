@@ -35,6 +35,7 @@
     },
     "peers": {
         "peer0.pharmacy.chainhealth.com": {
+            "caName": "ca.pharmacy.chainhealth.com",
             "url": "grpcs://localhost:7051",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer0.pharmacy.chainhealth.com/msp/tlscacerts/tlsca.pharmacy.chainhealth.com-cert.pem"
@@ -100,7 +101,7 @@
             "url": "https://localhost:7054",
             "caName": "ca.pharmacy.chainhealth.com",
             "tlsCACerts": {
-                "pem": "-----BEGIN CERTIFICATE-----\nMIICczCCAhmgAwIBAgIQQKT6sxCVMK4U3WztU4vZWTAKBggqhkjOPQQDAjCBgzEL\nMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG\ncmFuY2lzY28xITAfBgNVBAoTGHBoYXJtYWN5LmNoYWluaGVhbHRoLmNvbTEkMCIG\nA1UEAxMbY2EucGhhcm1hY3kuY2hhaW5oZWFsdGguY29tMB4XDTI0MDIyMzIyMDAw\nMFoXDTM0MDIyMDIyMDAwMFowgYMxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxp\nZm9ybmlhMRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMSEwHwYDVQQKExhwaGFybWFj\neS5jaGFpbmhlYWx0aC5jb20xJDAiBgNVBAMTG2NhLnBoYXJtYWN5LmNoYWluaGVh\nbHRoLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABO/1l6nb//rDo5Q0CPu5\nPPkpm7uHZeRUXrP/lH6nl30nnRqdqhIE54xMG6XDUWRvwDqIA85SD7TNRbWKsQrg\n4RGjbTBrMA4GA1UdDwEB/wQEAwIBpjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYB\nBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zApBgNVHQ4EIgQgL5Olzt1943wPvSACucu0\npEBdzC29gh0tHCq6+XRxlpowCgYIKoZIzj0EAwIDSAAwRQIgYznFNBF5yozOC7Yp\nmKXEZvP/lwKdDRoZsVtsPvWLuzICIQCQ6F3qcOr6uZJ2QKIEu6uk6TKBZMqkhGn/\nSb2pVKeZbQ==\n-----END CERTIFICATE-----"
+                "path": "../../channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/ca/ca.pharmacy.chainhealth.com-cert.pem"
             },
             "httpOptions": {
                 "verify": false
