@@ -46,6 +46,7 @@
             }
         },
         "peer1.pharmacy.chainhealth.com": {
+            "caName": "ca.pharmacy.chainhealth.com",
             "url": "grpcs://localhost:8051",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer1.pharmacy.chainhealth.com/msp/tlscacerts/tlsca.pharmacy.chainhealth.com-cert.pem"
@@ -56,6 +57,7 @@
             }
         },
         "peer0.insurance.chainhealth.com": {
+            "caName": "ca.insurance.chainhealth.com",
             "url": "grpcs://localhost:9051",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer0.insurance.chainhealth.com/msp/tlscacerts/tlsca.insurance.chainhealth.com-cert.pem"
@@ -66,6 +68,7 @@
             }
         },
         "peer1.insurance.chainhealth.com": {
+            "caName": "ca.insurance.chainhealth.com",
             "url": "grpcs://localhost:10051",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer1.insurance.chainhealth.com/msp/tlscacerts/tlsca.insurance.chainhealth.com-cert.pem"
@@ -76,6 +79,7 @@
             }
         },
         "peer0.patient.chainhealth.com": {
+            "caName": "ca.patient.chainhealth.com",
             "url": "grpcs://localhost:12051",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer0.patient.chainhealth.com/msp/tlscacerts/tlsca.patient.chainhealth.com-cert.pem"
@@ -86,6 +90,7 @@
             }
         },
         "peer1.patient.chainhealth.com": {
+            "caName": "ca.patient.chainhealth.com",
             "url": "grpcs://localhost:13051",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer1.patient.chainhealth.com/msp/tlscacerts/tlsca.patient.chainhealth.com-cert.pem"

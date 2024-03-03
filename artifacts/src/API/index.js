@@ -143,12 +143,13 @@ async function connectToNetwork() {
   // Create a new file system based wallet for managing identities.
   const walletPath = path.join(process.cwd(), "wallet");
   const wallet = await Wallets.newFileSystemWallet(walletPath);
+  console.log(wallet);
 
   // Create a new gateway for connecting to our peer node.
   const gateway = new Gateway();
   await gateway.connect(connectionProfile, {
     wallet,
-    identity: "peer0",
+    identity: "peer0patient",
     discovery: { enabled: true, asLocalhost: true },
   });
 
@@ -170,8 +171,8 @@ app.use(morgan("tiny"));
 
 app.get("/getAllRecords", async (req, res) => {
   try {
-    await enrollAdmin();
-    await enrollPeer();
+    // await enrollAdmin();
+    // await enrollPeer();
     const contract = await connectToNetwork();
     const result = await getAllRecords(contract);
     res.send(result.toString());
