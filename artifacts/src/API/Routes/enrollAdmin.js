@@ -45,8 +45,7 @@ async function enrollAdmin(
       enrollmentSecret,
       username
     );
-    // return `Successfully enrolled admin user "${username}" and imported it into the wallet`;
-    return await wallet.getUser(username);
+    return `Successfully enrolled admin user "${username}" and imported it into the wallet`;
   } catch (error) {
     console.log(error);
   }
