@@ -14,6 +14,7 @@ OrdererOrgs:
       - Hostname: orderer
       - Hostname: orderer2
       - Hostname: orderer3
+      - Hostname: orderer4
 
 PeerOrgs:
   - Name: Pharmacy
@@ -36,8 +37,18 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: Patient
-    Domain: patient.chainhealth.com
+  - Name: Ministryofhealth
+    Domain: ministryofhealth.chainhealth.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+      SANS:
+        - "localhost"
+    Users:
+      Count: 1
+
+  - Name: Doctor
+    Domain: doctor.chainhealth.com
     EnableNodeOUs: true
     Template:
       Count: 2

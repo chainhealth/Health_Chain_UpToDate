@@ -2,7 +2,8 @@ export CORE_PEER_TLS_ENABLED=true
 export ORDERER_CA=${PWD}/artifacts/channel/crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer.chainhealth.com/msp/tlscacerts/tlsca.chainhealth.com-cert.pem
 export PEER0_pharmacy_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer0.pharmacy.chainhealth.com/tls/ca.crt
 export PEER0_insurance_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer0.insurance.chainhealth.com/tls/ca.crt
-export PEER0_patient_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer0.patient.chainhealth.com/tls/ca.crt
+export PEER0_ministryofhealth_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer0.ministryofhealth.chainhealth.com/tls/ca.crt
+export PEER0_doctor_CA=${PWD}/artifacts/channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer0.doctor.chainhealth.com/tls/ca.crt
 export FABRIC_CFG_PATH=${PWD}/artifacts/channel/config/
 
 export CHANNEL_NAME=chainhealth-channel
@@ -45,20 +46,33 @@ setGlobalsForPeer1insurance(){
     export CORE_PEER_ADDRESS=localhost:10051
 }
 
-# Setting environment variables for Peer0Patient
-setGlobalsForPeer0patient(){
-    export CORE_PEER_LOCALMSPID="PatientMSP"
-    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_patient_CA
-    export CORE_PEER_MSPCONFIGPATH=${PWD}/artifacts/channel/crypto-config/peerOrganizations/patient.chainhealth.com/users/Admin@patient.chainhealth.com/msp
+setGlobalsForPeer0ministryofhealth(){
+    export CORE_PEER_LOCALMSPID="MinistryofhealthMSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ministryofhealth_CA
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/artifacts/channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/users/Admin@ministryofhealth.chainhealth.com/msp
     export CORE_PEER_ADDRESS=localhost:12051 
 }
 
-# Setting environment variables for Peer1Patient
-setGlobalsForPeer1patient(){
-    export CORE_PEER_LOCALMSPID="PatientMSP"
-    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_patient_CA
-    export CORE_PEER_MSPCONFIGPATH=${PWD}/artifacts/channel/crypto-config/peerOrganizations/patient.chainhealth.com/users/Admin@patient.chainhealth.com/msp
+# Setting environment variables for Peer1insurance
+setGlobalsForPeer1ministryofhealth(){
+    export CORE_PEER_LOCALMSPID="MinistryofhealthMSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ministryofhealth_CA
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/artifacts/channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/users/Admin@ministryofhealth.chainhealth.com/msp
     export CORE_PEER_ADDRESS=localhost:13051  
+}
+
+setGlobalsForPeer0doctor(){
+    export CORE_PEER_LOCALMSPID="DoctorMSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_doctor_CA
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/artifacts/channel/crypto-config/peerOrganizations/doctor.chainhealth.com/users/Admin@doctor.chainhealth.com/msp
+    export CORE_PEER_ADDRESS=localhost:14051 
+}
+
+setGlobalsForPeer1doctor(){
+    export CORE_PEER_LOCALMSPID="DoctorMSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_doctor_CA
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/artifacts/channel/crypto-config/peerOrganizations/doctor.chainhealth.com/users/Admin@doctor.chainhealth.com/msp
+    export CORE_PEER_ADDRESS=localhost:15051  
 }
 
 presetup() {
@@ -100,13 +114,21 @@ installChaincode() {
     ./bin/peer lifecycle chaincode install ${CC_NAME}.tar.gz
     echo "===================== Chaincode is installed on peer1.insurance ===================== "
 
-    setGlobalsForPeer0patient
+    setGlobalsForPeer0ministryofhealth
     ./bin/peer lifecycle chaincode install ${CC_NAME}.tar.gz
-    echo "===================== Chaincode is installed on peer0.patient ===================== "
+    echo "===================== Chaincode is installed on peer0.ministryofhealth ===================== "
 
-    setGlobalsForPeer1patient
+    setGlobalsForPeer1ministryofhealth
     ./bin/peer lifecycle chaincode install ${CC_NAME}.tar.gz
-    echo "===================== Chaincode is installed on peer1.patient ===================== "
+    echo "===================== Chaincode is installed on peer1.ministryofhealth ===================== "
+
+    setGlobalsForPeer0doctor
+    ./bin/peer lifecycle chaincode install ${CC_NAME}.tar.gz
+    echo "===================== Chaincode is installed on peer0.doctor ===================== "
+
+    setGlobalsForPeer1doctor
+    ./bin/peer lifecycle chaincode install ${CC_NAME}.tar.gz
+    echo "===================== Chaincode is installed on peer1.doctor ===================== "
 }
 
 queryInstalled() {
@@ -142,15 +164,27 @@ approveForMyinsurance() {
 
 }
 
-approveForMypatient() {
-    setGlobalsForPeer0patient
+approveForMyministryofhealth() {
+    setGlobalsForPeer0ministryofhealth
     ./bin/peer lifecycle chaincode approveformyorg -o localhost:7050 \
         --ordererTLSHostnameOverride orderer.chainhealth.com --tls \
         --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${VERSION} \
         --init-required --package-id ${PACKAGE_ID} \
         --sequence ${SEQUENCE}
 
-    echo "===================== chaincode approved from Patient Org ===================== "
+    echo "===================== chaincode approved from Ministryofhealth Org ===================== "
+
+}
+
+approveForMydoctor() {
+    setGlobalsForPeer0doctor
+    ./bin/peer lifecycle chaincode approveformyorg -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.chainhealth.com --tls \
+        --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${VERSION} \
+        --init-required --package-id ${PACKAGE_ID} \
+        --sequence ${SEQUENCE}
+
+    echo "===================== chaincode approved from Ministryofhealth Org ===================== "
 
 }
 
@@ -169,7 +203,7 @@ commitChaincodeDefination() {
         --channelID $CHANNEL_NAME --name ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
-        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_patient_CA \
+        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
         --version ${VERSION} --sequence ${SEQUENCE} --init-required
 
     echo "===================== Committed Chaincode Definition ===================== "
@@ -190,7 +224,7 @@ chaincodeInvokeInit() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
-        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_patient_CA \
+        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
         --isInit -c '{"function":"InitLedger","Args":[]}'
 
     echo "===================== Chaincode Invoke Init Finished ===================== "
@@ -225,14 +259,14 @@ getPatientRecordPharmacy() {
 }
 
 getPatientRecordPatient() {
-    setGlobalsForPeer0patient
+    setGlobalsForPeer0ministryofhealth
     ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Seifeldin", "Sami", "seif@gmail.com"]}'
     
     echo "===================== Chaincode getPatientRecord Patient Finished ===================== "
 }
 
 getPatientRecordPatientError() {
-    setGlobalsForPeer0patient
+    setGlobalsForPeer0ministryofhealth
     ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Someone", "Sami", "someone@gmail.com"]}'
     
     echo "===================== Chaincode getPatientRecord Patient Error Finished ===================== "
@@ -246,7 +280,7 @@ writePatientPrescription() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
-        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_patient_CA \
+        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
         -c '{"function": "writePatientPrescription","Args":["Seifeldin", "Sami", "seif@gmail.com", "Panadol,Vitamin A,Vitamin C"]}'
 
     echo "===================== Chaincode writePatientPrescription Finished ===================== "
@@ -277,7 +311,10 @@ sleep 3
 approveForMyinsurance
 sleep 3
 
-approveForMypatient
+approveForMyministryofhealth
+sleep 3
+
+approveForMydoctor
 sleep 3
 
 checkCommitReadyness

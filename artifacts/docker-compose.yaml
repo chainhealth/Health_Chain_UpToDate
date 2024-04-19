@@ -52,24 +52,45 @@ services:
     networks:
       - test
 
-  ca-patient:
+  ca-ministryofhealth:
     image: hyperledger/fabric-ca:1.5.8
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-      - FABRIC_CA_SERVER_CA_NAME=ca.patient.chainhealth.com
-      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.patient.chainhealth.com-cert.pem
+      - FABRIC_CA_SERVER_CA_NAME=ca.ministryofhealth.chainhealth.com
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.ministryofhealth.chainhealth.com-cert.pem
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
-      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-tls/tlsca.patient.chainhealth.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-tls/tlsca.ministryofhealth.chainhealth.com-cert.pem
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-tls/priv_sk
     ports:
       - "12054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ./channel/crypto-config/peerOrganizations/patient.chainhealth.com/ca/:/etc/hyperledger/fabric-ca-server-config
-      - ./channel/crypto-config/peerOrganizations/patient.chainhealth.com/tlsca/:/etc/hyperledger/fabric-ca-server-tls
-    container_name: ca.patient.chainhealth.com
-    hostname: ca.patient.chainhealth.com
+      - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/tlsca/:/etc/hyperledger/fabric-ca-server-tls
+    container_name: ca.ministryofhealth.chainhealth.com
+    hostname: ca.ministryofhealth.chainhealth.com
+    networks:
+      - test
+
+  ca-doctor:
+    image: hyperledger/fabric-ca:1.5.8
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.doctor.chainhealth.com
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.doctor.chainhealth.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-tls/tlsca.doctor.chainhealth.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-tls/priv_sk
+    ports:
+      - "14054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/tlsca/:/etc/hyperledger/fabric-ca-server-tls
+    container_name: ca.doctor.chainhealth.com
+    hostname: ca.doctor.chainhealth.com
     networks:
       - test
 
@@ -178,6 +199,41 @@ services:
       - ./channel/crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/msp:/var/hyperledger/orderer/msp
       - ./channel/crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/tls:/var/hyperledger/orderer/tls
 
+  orderer4.chainhealth.com:
+    container_name: orderer4.chainhealth.com
+    image: hyperledger/fabric-orderer:2.5.4
+    dns_search: .
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - FABRIC_LOGGING_SPEC=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_METRICS_PROVIDER=prometheus
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443
+      - ORDERER_GENERAL_LISTENPORT=11050
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderers
+    command: orderer
+    ports:
+      - 11050:11050
+      - 8446:8443
+    networks:
+      - test
+    volumes:
+      - ./channel/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./channel/crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer4.chainhealth.com/msp:/var/hyperledger/orderer/msp
+      - ./channel/crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer4.chainhealth.com/tls:/var/hyperledger/orderer/tls
+
   couchdb0:
     container_name: couchdb0
     image: hyperledger/fabric-couchdb:0.4.22
@@ -241,6 +297,28 @@ services:
       - COUCHDB_PASSWORD=
     ports:
       - 10984:5984
+    networks:
+      - test
+
+  couchdb6:
+    container_name: couchdb6
+    image: hyperledger/fabric-couchdb:0.4.22
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    ports:
+      - 11984:5984
+    networks:
+      - test
+
+  couchdb7:
+    container_name: couchdb7
+    image: hyperledger/fabric-couchdb:0.4.22
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    ports:
+      - 12984:5984
     networks:
       - test
 
@@ -422,26 +500,26 @@ services:
     networks:
       - test
 
-  peer0.patient.chainhealth.com:
-    container_name: peer0.patient.chainhealth.com
+  peer0.ministryofhealth.chainhealth.com:
+    container_name: peer0.ministryofhealth.chainhealth.com
     extends:
       file: base.yaml
       service: peer-base
     environment:
       - FABRIC_LOGGING_SPEC=info
       - ORDERER_GENERAL_LOGLEVEL=info
-      - CORE_PEER_LOCALMSPID=PatientMSP
+      - CORE_PEER_LOCALMSPID=MinistryofhealthMSP
 
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
 
-      - CORE_PEER_ID=peer0.patient.chainhealth.com
-      - CORE_PEER_ADDRESS=peer0.patient.chainhealth.com:12051
+      - CORE_PEER_ID=peer0.ministryofhealth.chainhealth.com
+      - CORE_PEER_ADDRESS=peer0.ministryofhealth.chainhealth.com:12051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:12051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.patient.chainhealth.com:12052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.ministryofhealth.chainhealth.com:12052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:12052
       # Exposed for discovery Service
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.patient.chainhealth.com:12051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.patient.chainhealth.com:13051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.ministryofhealth.chainhealth.com:12051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.ministryofhealth.chainhealth.com:13051
 
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb4:5984
@@ -459,33 +537,33 @@ services:
     ports:
       - 12051:12051
     volumes:
-      - ./channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer0.patient.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
-      - ./channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer0.patient.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
+      - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer0.ministryofhealth.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
+      - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer0.ministryofhealth.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
       - /var/run/:/host/var/run/
       - ./channel/:/etc/hyperledger/channel/
     networks:
       - test
 
-  peer1.patient.chainhealth.com:
-    container_name: peer1.patient.chainhealth.com
+  peer1.ministryofhealth.chainhealth.com:
+    container_name: peer1.ministryofhealth.chainhealth.com
     extends:
       file: base.yaml
       service: peer-base
     environment:
       - FABRIC_LOGGING_SPEC=info
       - ORDERER_GENERAL_LOGLEVEL=info
-      - CORE_PEER_LOCALMSPID=PatientMSP
+      - CORE_PEER_LOCALMSPID=MinistryofhealthMSP
 
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
 
-      - CORE_PEER_ID=peer1.patient.chainhealth.com
-      - CORE_PEER_ADDRESS=peer1.patient.chainhealth.com:13051
+      - CORE_PEER_ID=peer1.ministryofhealth.chainhealth.com
+      - CORE_PEER_ADDRESS=peer1.ministryofhealth.chainhealth.com:13051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:13051
-      - CORE_PEER_CHAINCODEADDRESS=peer1.patient.chainhealth.com:13052
+      - CORE_PEER_CHAINCODEADDRESS=peer1.ministryofhealth.chainhealth.com:13052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:13052
       # Exposed for discovery Service
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.patient.chainhealth.com:13051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.patient.chainhealth.com:12051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.ministryofhealth.chainhealth.com:13051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.ministryofhealth.chainhealth.com:12051
 
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb5:5984
@@ -503,8 +581,96 @@ services:
     ports:
       - 13051:13051
     volumes:
-      - ./channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer1.patient.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
-      - ./channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer1.patient.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
+      - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer1.ministryofhealth.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
+      - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer1.ministryofhealth.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
+      - /var/run/:/host/var/run/
+      - ./channel/:/etc/hyperledger/channel/
+    networks:
+      - test
+
+  peer0.doctor.chainhealth.com:
+    container_name: peer0.doctor.chainhealth.com
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - FABRIC_LOGGING_SPEC=info
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - CORE_PEER_LOCALMSPID=DoctorMSP
+
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
+
+      - CORE_PEER_ID=peer0.doctor.chainhealth.com
+      - CORE_PEER_ADDRESS=peer0.doctor.chainhealth.com:14051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:14051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.doctor.chainhealth.com:14052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:14052
+      # Exposed for discovery Service
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.doctor.chainhealth.com:14051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.doctor.chainhealth.com:15051
+
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb6:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+      - CORE_METRICS_PROVIDER=prometheus
+      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
+    depends_on:
+      - couchdb6
+    ports:
+      - 14051:14051
+    volumes:
+      - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer0.doctor.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
+      - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer0.doctor.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
+      - /var/run/:/host/var/run/
+      - ./channel/:/etc/hyperledger/channel/
+    networks:
+      - test
+
+  peer1.doctor.chainhealth.com:
+    container_name: peer1.doctor.chainhealth.com
+    extends:
+      file: base.yaml
+      service: peer-base
+    environment:
+      - FABRIC_LOGGING_SPEC=info
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - CORE_PEER_LOCALMSPID=DoctorMSP
+
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
+
+      - CORE_PEER_ID=peer1.doctor.chainhealth.com
+      - CORE_PEER_ADDRESS=peer1.doctor.chainhealth.com:15051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:15051
+      - CORE_PEER_CHAINCODEADDRESS=peer1.doctor.chainhealth.com:15052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:15052
+      # Exposed for discovery Service
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.doctor.chainhealth.com:15051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.doctor.chainhealth.com:14051
+
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb7:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+      - CORE_METRICS_PROVIDER=prometheus
+      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
+    depends_on:
+      - couchdb7
+    ports:
+      - 15051:15051
+    volumes:
+      - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer1.doctor.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
+      - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer1.doctor.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
       - /var/run/:/host/var/run/
       - ./channel/:/etc/hyperledger/channel/
     networks:

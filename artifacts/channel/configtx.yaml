@@ -67,27 +67,49 @@ Organizations:
             - Host: peer0.insurance.chainhealth.com
               Port: 9051
 
-    - &Patient
-        Name: Patient
-        ID: PatientMSP
-        MSPDir: crypto-config/peerOrganizations/patient.chainhealth.com/msp
+    - &Ministryofhealth
+        Name: Ministryofhealth
+        ID: MinistryofhealthMSP
+        MSPDir: crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/msp
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('PatientMSP.admin', 'PatientMSP.peer', 'PatientMSP.client')"
+                Rule: "OR('MinistryofhealthMSP.admin', 'MinistryofhealthMSP.peer', 'MinistryofhealthMSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('PatientMSP.admin', 'PatientMSP.client')"
+                Rule: "OR('MinistryofhealthMSP.admin', 'MinistryofhealthMSP.client')"
             Admins:
                 Type: Signature
-                Rule: "OR('PatientMSP.admin')"
+                Rule: "OR('MinistryofhealthMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('PatientMSP.peer')"
+                Rule: "OR('MinistryofhealthMSP.peer')"
 
         AnchorPeers:
-            - Host: peer0.patient.chainhealth.com
+            - Host: peer0.ministryofhealth.chainhealth.com
               Port: 12051
+
+    - &Doctor
+        Name: Doctor
+        ID: DoctorMSP
+        MSPDir: crypto-config/peerOrganizations/doctor.chainhealth.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('DoctorMSP.admin', 'DoctorMSP.peer', 'DoctorMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('DoctorMSP.admin', 'DoctorMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('DoctorMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('DoctorMSP.peer')"
+
+        AnchorPeers:
+            - Host: peer0.doctor.chainhealth.com
+              Port: 14051
 
 
 
@@ -238,7 +260,8 @@ Profiles:
             Organizations:
                 - *Pharmacy
                 - *Insurance
-                - *Patient
+                - *Ministryofhealth
+                - *Doctor
             Capabilities:
                 <<: *ApplicationCapabilities
 
@@ -263,10 +286,15 @@ Profiles:
                   Port: 9050
                   ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/tls/server.crt
                   ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/tls/server.crt
+                - Host: orderer4.chainhealth.com
+                  Port: 11050
+                  ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer4.chainhealth.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer4.chainhealth.com/tls/server.crt
             Addresses:
                 - orderer.chainhealth.com:7050
                 - orderer2.chainhealth.com:8050
                 - orderer3.chainhealth.com:9050
+                - orderer4.chainhealth.com:11050
 
             Organizations:
             - *OrdererOrg
@@ -277,4 +305,5 @@ Profiles:
                 Organizations:
                 - *Pharmacy
                 - *Insurance
-                - *Patient
+                - *Ministryofhealth
+                - *Doctor

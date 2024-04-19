@@ -8,7 +8,8 @@ rm -rf ./crypto-config
 rm genesis.block chainhealth-channel.tx
 rm PharmacyMSPanchors.tx
 rm InsuranceMSPanchors.tx
-rm PatientMSPanchors.tx
+rm MinistryofhealthMSPanchors.tx
+rm DoctorMSPanchors.tx
 rm -rf ../../channel-artifacts/*
 
 #Generate Crypto artifactes for organizations
@@ -58,10 +59,17 @@ echo "########## Anchor Peer for InsuranceMSP Created ##########"
 echo ""
 echo ""
 
-echo "#######    Generating anchor peer update for PatientMSP  ##########"
+echo "#######    Generating anchor peer update for MinistryofhealthMSP  ##########"
 # Generating Anchor Peer for org3
-../../bin/configtxgen -profile BasicChannel -configPath . -outputAnchorPeersUpdate ./PatientMSPanchors.tx -channelID $CHANNEL_NAME -asOrg Patient
-echo "########## Anchor Peer for PatientMSP Created ##########"
+../../bin/configtxgen -profile BasicChannel -configPath . -outputAnchorPeersUpdate ./MinistryofhealthMSPanchors.tx -channelID $CHANNEL_NAME -asOrg Ministryofhealth
+echo "########## Anchor Peer for MinistryofhealthMSP Created ##########"
+echo ""
+echo ""
+
+echo "#######    Generating anchor peer update for DoctorMSP  ##########"
+# Generating Anchor Peer for org3
+../../bin/configtxgen -profile BasicChannel -configPath . -outputAnchorPeersUpdate ./DoctorMSPanchors.tx -channelID $CHANNEL_NAME -asOrg Doctor
+echo "########## Anchor Peer for DoctorMSP Created ##########"
 echo ""
 echo ""
 

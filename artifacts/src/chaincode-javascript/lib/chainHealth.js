@@ -124,7 +124,7 @@ class EHRContract extends Contract {
     } else if (clientMSP === "PharmacyMSP") {
       const patientMedication = patientDataJSON.medicalHistory.medications;
       return JSON.stringify(patientMedication);
-    } else if (clientMSP === "PatientMSP") {
+    } else if (clientMSP === "MinistryofhealthMSP") {
       return JSON.stringify(patientDataJSON);
     } else {
       throw new Error("You don't have access to this record!");
