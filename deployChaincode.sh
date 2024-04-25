@@ -204,6 +204,7 @@ commitChaincodeDefination() {
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
         --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
+        --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
         --version ${VERSION} --sequence ${SEQUENCE} --init-required
 
     echo "===================== Committed Chaincode Definition ===================== "
@@ -225,6 +226,7 @@ chaincodeInvokeInit() {
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
         --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
+        --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
         --isInit -c '{"function":"InitLedger","Args":[]}'
 
     echo "===================== Chaincode Invoke Init Finished ===================== "
@@ -237,43 +239,44 @@ chaincodeQueryInit() {
     echo "===================== Chaincode Query All Assets Finished ===================== "
 }
 
-chaincodeQuery() {
-    setGlobalsForPeer0pharmacy
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "queryRecord","Args":["2"]}'
-    
-    echo "===================== Chaincode Query Asset1 Finished ===================== "
-}
-
 getPatientRecordInsurance() {
     setGlobalsForPeer0insurance
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Seifeldin", "Sami", "seif@gmail.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientInfo","Args":["patient1"]}'
     
     echo "===================== Chaincode getPatientRecord Insurance Finished ===================== "
 }
 
 getPatientRecordPharmacy() {
     setGlobalsForPeer0pharmacy
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Mina", "Saad", "mina@gmail.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientInfo","Args":["patient1"]}'
     
     echo "===================== Chaincode getPatientRecord Pharmacy Finished ===================== "
 }
 
-getPatientRecordPatient() {
-    setGlobalsForPeer0ministryofhealth
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Seifeldin", "Sami", "seif@gmail.com"]}'
+getPatientRecordDoctor() {
+    setGlobalsForPeer0doctor
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientInfo","Args":["patient1"]}'
     
-    echo "===================== Chaincode getPatientRecord Patient Finished ===================== "
+    echo "===================== Chaincode getPatientRecord doctor Finished ===================== "
+}
+
+
+getPatientRecordMOH() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientInfo","Args":["patient1"]}'
+    
+    echo "===================== Chaincode getPatientRecord MOH Finished ===================== "
 }
 
 getPatientRecordPatientError() {
     setGlobalsForPeer0ministryofhealth
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientRecord","Args":["Someone", "Sami", "someone@gmail.com"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPatientInfo","Args":["ph5"]}'
     
     echo "===================== Chaincode getPatientRecord Patient Error Finished ===================== "
 }
 
 writePatientPrescription() {
-    setGlobalsForPeer0insurance
+    setGlobalsForPeer0doctor
     ./bin/peer chaincode invoke -o localhost:7050 \
         --ordererTLSHostnameOverride orderer.chainhealth.com \
         --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
@@ -281,16 +284,98 @@ writePatientPrescription() {
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
         --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
-        -c '{"function": "writePatientPrescription","Args":["Seifeldin", "Sami", "seif@gmail.com", "Panadol,Vitamin A,Vitamin C"]}'
+        --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
+        -c '{"function": "writePatientPrescription","Args":["patient1", "Dr. Smith", "Panadol,Vitamin A,Vitamin C"]}'
 
     echo "===================== Chaincode writePatientPrescription Finished ===================== "
 }
 
-readPatientPrescription() {
-    setGlobalsForPeer0insurance
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "readPatientPrescription","Args":["Seifeldin", "Sami", "seif@gmail.com"]}'
+getPharmacyRecordError() {
+    setGlobalsForPeer0doctor
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPharmacyInfo","Args":["pharmacy1"]}'
     
-    echo "===================== Chaincode readPatientPrescription Finished ===================== "
+    echo "===================== Chaincode getPharmacyRecordError Patient Error Finished ===================== "
+}
+
+getPharmacyRecord() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "getPharmacyInfo","Args":["pharmacy1"]}'
+    
+    echo "===================== Chaincode getPharmacyRecord Finished ===================== "
+}
+
+confirmPrescriptionSalePharmacyError1() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "confirmPrescriptionSalePharmacy","Args":["patient1", "pharmacy1", "pres3"]}'
+    
+    echo "===================== Chaincode confirmPrescriptionSalePharmacyError1 Finished ===================== "
+}
+
+confirmPrescriptionSalePharmacyError2() {
+    setGlobalsForPeer0pharmacy
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "confirmPrescriptionSalePharmacy","Args":["patient1", "pharmacy1", "pres3"]}'
+    
+    echo "===================== Chaincode confirmPrescriptionSalePharmacyError2 Finished ===================== "
+}
+
+confirmPrescriptionSalePharmacy() {
+    setGlobalsForPeer0pharmacy
+    ./bin/peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.chainhealth.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
+        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
+        --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
+        -c '{"function": "confirmPrescriptionSalePharmacy","Args":["patient1", "pharmacy1", "pres3"]}'
+
+    echo "===================== Chaincode confirmPrescriptionSalePharmacy Finished ===================== "
+}
+
+confirmPrescriptionSalePatient() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.chainhealth.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
+        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
+        --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
+        -c '{"function": "confirmPrescriptionSalePharmacy","Args":["patient1", "pharmacy1", "pres3"]}'
+
+    echo "===================== Chaincode confirmPrescriptionSalePatient Finished ===================== "
+}
+
+addUserPatient() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.chainhealth.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
+        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
+        --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
+        -c '{"function": "addUser","Args":["something", "patient"]}'
+
+    echo "===================== Chaincode addUserPatient Finished ===================== "
+}
+
+addUserPharmacy() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.chainhealth.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
+        --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
+        --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
+        -c '{"function": "addUser","Args":["something", "pharmacy"]}'
+
+    echo "===================== Chaincode addUserPharmacy Finished ===================== "
 }
 
 presetup
@@ -334,10 +419,6 @@ chaincodeQueryInit
 sleep 3
 
 echo ""
-chaincodeQuery
-sleep 3
-
-echo ""
 getPatientRecordInsurance
 sleep 3
 
@@ -346,7 +427,11 @@ getPatientRecordPharmacy
 sleep 3
 
 echo ""
-getPatientRecordPatient
+getPatientRecordDoctor
+sleep 3
+
+echo ""
+getPatientRecordMOH
 sleep 3
 
 echo ""
@@ -358,7 +443,55 @@ writePatientPrescription
 sleep 3
 
 echo ""
-readPatientPrescription
+getPatientRecordDoctor
+sleep 3
+
+echo ""
+getPharmacyRecordError
+sleep 3
+
+echo ""
+getPharmacyRecord
+sleep 3
+
+echo ""
+confirmPrescriptionSalePharmacyError1
+sleep 3
+
+echo ""
+confirmPrescriptionSalePharmacyError2
+sleep 3
+
+echo ""
+confirmPrescriptionSalePharmacy
+sleep 3
+
+echo ""
+getPatientRecordMOH
+sleep 3
+
+echo ""
+confirmPrescriptionSalePatient
+sleep 3
+
+echo ""
+getPatientRecordMOH
+sleep 3
+
+echo ""
+addUserPatient
+sleep 3
+
+echo ""
+addUserPatient
+sleep 3
+
+echo ""
+addUserPharmacy
+sleep 3
+
+echo ""
+chaincodeQueryInit
 sleep 3
 
 echo "===================== Finished Program ===================== " 
