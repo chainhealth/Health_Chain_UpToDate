@@ -1,95 +1,47 @@
 "use strict";
 
-const stringify = require("json-stringify-deterministic");
+const Ledger = require("./ledger.js");
 const { Contract } = require("fabric-contract-api");
-const ClientIdentity = require("fabric-shim").ClientIdentity;
 
+const ledger = new Ledger();
 const lastIdPatientKey = "patientIdCounter";
 const lastIdDoctorKey = "doctorIdCounter";
 const lastIdPharmacyKey = "pharmacyIdCounter";
 const lastIdInsurancekey = "insuranceIdCounter";
 
+// TODO: API calls (Last thing)
+// TODO: Login functionality, using bcrypt library (HASH and salt rounds)
+// TODO: Pagination functionality (Insurance (patient data), Patient (Medications), pharmacy (Medictaions))
+
+// Done:
+// 1- Added cost to medicines
+// 2- Refactored the code
+// 3- Fixed confirmation function
+// 4- Insurance check (insurance state (active or not) and balance check)
+// 5- Criteria check
+// 5- Error handling
+
 class EHRContract extends Contract {
-  // Initialization method for ledger data
   async InitLedger(ctx) {
     try {
+      // Storing patient data
       for (const patientRecord of patientRecords) {
-        // Storing patient record in the ledger
-        await ctx.stub.putState(
-          patientRecord.patientID,
-          Buffer.from(stringify(patientRecord))
-        );
+        await ledger.writeRecord(ctx, patientRecord.patientID, patientRecord);
       }
-      // Storing pharmacy record in the ledger
-      for (const pharmacyRecord of pharmacyRecords) {
-        // Storing patient record in the ledger
-        await ctx.stub.putState(
-          pharmacyRecord.pharmacyId,
-          Buffer.from(stringify(pharmacyRecord))
-        );
+
+      // Storing pharmacy data
+      for (const pharmRecord of pharmacyRecords) {
+        await ledger.writeRecord(ctx, pharmRecord.pharmacyId, pharmRecord);
       }
-      const patientLength = patientRecords.length.toString();
-      const pharmacyLength = pharmacyRecords.length.toString();
-      const doctorLength = doctorRecords.length.toString();
-      const insuranceLength = doctorRecords.length.toString();
 
-      const patientCounterId = {
-        name: lastIdPatientKey,
-        lastId: patientLength,
-      };
-      const pharmacyCounterId = {
-        name: lastIdPatientKey,
-        lastId: pharmacyLength,
-      };
-      const doctorCounterId = {
-        name: lastIdPatientKey,
-        lastId: doctorLength,
-      };
-      const insuranceCounterId = {
-        name: lastIdPatientKey,
-        lastId: insuranceLength,
-      };
-      await ctx.stub.putState(lastIdPatientKey, stringify(patientCounterId));
-      await ctx.stub.putState(lastIdPharmacyKey, stringify(pharmacyCounterId));
-      await ctx.stub.putState(lastIdDoctorKey, stringify(doctorCounterId));
-      await ctx.stub.putState(
-        lastIdInsurancekey,
-        stringify(insuranceCounterId)
-      );
+      // Storing medicine information
+      await ledger.writeRecord(ctx, "Medicines", medicineList);
 
-      return "Successfully initialized the ledger";
-    } catch (err) {
-      throw new Error(`${"Error while initializing the ledger!"}: ${err}`);
-    }
-  }
-
-  // TODO: must be deleted
-  // Method to retrieve all records from the ledger
-  async getAllRecords(ctx) {
-    try {
-      // range query with empty string for startKey and endKey does an open-ended query of all assets in the chaincode namespace.
-      const iterator = await ctx.stub.getStateByRange("", "");
-      const recordData = await this._getIteratorData(iterator);
-      const mspID = this._getMSPID(ctx);
-      return `${recordData} ${mspID}`;
+      return "Successfully initialized the ledger!";
     } catch (error) {
-      throw new Error("Can't get all records!");
+      // TODO Change to throw
+      return `Error occured while initializing record, ${error}`;
     }
-  }
-
-  // Private method to convert iterator data to JSON
-  async _getIteratorData(iterator) {
-    const allRecords = [];
-    let result = await iterator.next();
-    while (!result.done) {
-      const strValue = Buffer.from(result.value.value.toString()).toString(
-        "utf8"
-      );
-      const record = this._changeToJSON(strValue);
-      allRecords.push(record);
-      result = await iterator.next();
-    }
-    return JSON.stringify(allRecords);
   }
 
   // Private method to convert string to JSON
@@ -103,162 +55,179 @@ class EHRContract extends Contract {
     return temp;
   }
 
-  // Private method to get MSP ID from the client identity
-  _getMSPID(ctx) {
-    const clientIdentity = new ClientIdentity(ctx.stub);
-    const clientMSP = clientIdentity.getMSPID();
-    return clientMSP;
-  }
-
-  // Private method to retrieve a specific record
-  async _getRecord(ctx, patientId) {
+  async getAllRecords(ctx) {
     try {
-      const asset = await ctx.stub.getState(patientId);
-      return asset;
-    } catch (err) {
-      throw new Error("Error getting the requested record!");
+      const recordData = await ledger.getAllRecords(ctx);
+      return recordData;
+    } catch (error) {
+      // TODO: Change to throw
+      return `Error occured while getting all record, ${error}`;
     }
   }
 
-  // Method to query a specific record
-  async _queryRecord(ctx, patientId) {
-    const asset = await this._getRecord(ctx, patientId);
-    if (asset instanceof Error) {
-      return asset;
-    }
-    if (!asset || asset.length === 0) {
-      throw new Error(`The asset with id ${patientId} does not exist`);
-    }
-    return asset.toString();
-  }
-
-  // Method to check patient by id
   async getPatientInfo(ctx, patientId) {
-    const patientData = await this._queryRecord(ctx, patientId);
-    // If patient is not found
-    if (patientData instanceof Error) {
-      return patientData;
-    }
+    try {
+      const patientData = await ledger.queryRecord(ctx, patientId);
+      if (patientData instanceof Error) {
+        // TODO: Change to throw
+        return patientData;
+      }
 
-    // Parse the patient data
-    const parsedData = this._changeToJSON(patientData);
+      // parse the patient Data
+      const parsedData = this._changeToJSON(patientData);
 
-    const clientMSP = this._getMSPID(ctx);
+      const clientMSP = ledger.getMSPID(ctx);
 
-    // Return the desired patient information
-    if (clientMSP === "DoctorMSP") {
-      return {
-        firstName: parsedData.personalInformation.firstName,
-        lastName: parsedData.personalInformation.lastName,
-        dateOfBirth: parsedData.personalInformation.dateOfBirth,
-        gender: parsedData.personalInformation.gender,
-        medicalHistory: parsedData.medicalHistory,
-        prescription: parsedData.prescription,
-      };
-    } else if (clientMSP === "InsuranceMSP") {
-      return {
-        firstName: parsedData.personalInformation.firstName,
-        lastName: parsedData.personalInformation.lastName,
-        dateOfBirth: parsedData.personalInformation.dateOfBirth,
-        gender: parsedData.personalInformation.gender,
-        insuranceInformation: parsedData.insuranceInformation,
-      };
-    } else if (clientMSP === "MinistryofhealthMSP") {
-      return parsedData;
-    } else if (clientMSP === "PharmacyMSP") {
-      return {
-        firstName: parsedData.personalInformation.firstName,
-        lastName: parsedData.personalInformation.lastName,
-        dateOfBirth: parsedData.personalInformation.dateOfBirth,
-        gender: parsedData.personalInformation.gender,
-        prescription: parsedData.prescription,
-      };
-    } else {
-      throw new Error("You don't have access to this record!");
+      // Return the desired patient information
+      if (clientMSP === "DoctorMSP") {
+        return {
+          firstName: parsedData.personalInformation.firstName,
+          lastName: parsedData.personalInformation.lastName,
+          dateOfBirth: parsedData.personalInformation.dateOfBirth,
+          gender: parsedData.personalInformation.gender,
+          medicalHistory: parsedData.medicalHistory,
+          prescription: parsedData.prescription,
+        };
+      } else if (clientMSP === "InsuranceMSP") {
+        return {
+          firstName: parsedData.personalInformation.firstName,
+          lastName: parsedData.personalInformation.lastName,
+          dateOfBirth: parsedData.personalInformation.dateOfBirth,
+          gender: parsedData.personalInformation.gender,
+          insuranceInformation: parsedData.insuranceInformation,
+        };
+      } else if (clientMSP === "MinistryofhealthMSP") {
+        return parsedData;
+      } else if (clientMSP === "PharmacyMSP") {
+        return {
+          firstName: parsedData.personalInformation.firstName,
+          lastName: parsedData.personalInformation.lastName,
+          dateOfBirth: parsedData.personalInformation.dateOfBirth,
+          gender: parsedData.personalInformation.gender,
+          prescription: parsedData.prescription,
+        };
+      } else {
+        // Change to throw
+        return "You don't have access to this record!";
+      }
+    } catch (error) {
+      // TODO: Change to throw
+      return `Error while getting record, ${error}`;
     }
   }
 
-  // Return the desired pharmacy information
   async getPharmacyInfo(ctx, pharmacyId) {
-    const pharmacyData = await this._queryRecord(ctx, pharmacyId);
-    // If pharmacy is not found
-    if (pharmacyData instanceof Error) {
-      return pharmacyData;
-    }
+    try {
+      const pharmacyData = await ledger.queryRecord(ctx, pharmacyId);
 
-    // Parse the patient data
-    const parsedData = this._changeToJSON(pharmacyData);
+      // If pharmacy is not found
+      if (pharmacyData instanceof Error) {
+        // TODO: Change to throw
+        return pharmacyData;
+      }
 
-    const clientMSP = this._getMSPID(ctx);
+      // Parse the patient data
+      const parsedData = this._changeToJSON(pharmacyData);
 
-    if (clientMSP === "MinistryofhealthMSP") {
-      return {
-        pharmacyName: parsedData.pharmacyName,
-        pharmacyAddress: parsedData.phramacyAddress,
-      };
-    } else {
-      throw new Error("You don't hace access to this record");
+      const clientMSP = ledger.getMSPID(ctx);
+
+      if (clientMSP === "MinistryofhealthMSP") {
+        return {
+          pharmacyName: parsedData.pharmacyName,
+          pharmacyAddress: parsedData.phramacyAddress,
+        };
+      } else {
+        throw new Error("You don't hace access to this record");
+      }
+    } catch (error) {
+      // TODO: Change to throw
+      return `${error}`;
     }
   }
 
-  // Private method to create an array from prescription string
-  _createPrescriptionArray(prescription) {
-    const prescriptionArray = prescription.split(",");
-    return prescriptionArray;
-  }
-
-  // Private method to update patient prescription
   async _updatePrescription(ctx, patientDataJSON, issuingDoctor, prescription) {
     try {
       // Calulate the prescriptionId
       const prescriptionId = `pres${patientDataJSON.prescription.length + 1}`;
 
-      const prescriptionArray = this._createPrescriptionArray(prescription);
       const prescriptionObject = {
         prescriptionID: prescriptionId,
         state: "issued",
         issuingDoctor: issuingDoctor,
-        medicines: prescriptionArray,
+        medicines: prescription,
       };
       patientDataJSON.prescription.push(prescriptionObject);
-      patientDataJSON.medicalHistory.medications = prescriptionArray;
-      await ctx.stub.putState(
-        patientDataJSON.patientID,
-        Buffer.from(stringify(patientDataJSON))
-      );
+      patientDataJSON.medicalHistory.medications = prescription;
+      await ledger.writeRecord(ctx, patientDataJSON.patientID, patientDataJSON);
     } catch (error) {
+      // TODO: Change to throw
       return error;
     }
   }
 
+  async _createPrescriptionObject(ctx, prescription) {
+    const medicineNames = prescription.split(",");
+    const medicineObject = [];
+
+    const medList = await ledger.queryRecord(ctx, "Medicines");
+    const medListParsed = this._changeToJSON(medList);
+
+    for (const medicineName of medicineNames) {
+      const medicine = medListParsed.find(
+        (medicine) => medicine.name === medicineName
+      );
+      if (medicine) {
+        const temp = {
+          medicineName: medicine.name,
+          description: medicine.description,
+        };
+        medicineObject.push(temp);
+      } else {
+        // TODO: change to throw
+        return "Medicine is not found!";
+      }
+    }
+    return medicineObject;
+  }
+
   // Method to write patient prescription, with access control
   async writePatientPrescription(ctx, patientId, issuingDoctor, prescription) {
-    const clientMSP = this._getMSPID(ctx);
-    if (clientMSP !== "DoctorMSP") {
-      throw new Error("You don't have the privilege to write prescriptions!");
-    }
-
-    const patientData = await this._queryRecord(ctx, patientId);
-    console.log(patientData);
-    // If patient is not found
-    if (patientData instanceof Error) {
-      return patientData;
-    }
-
-    // Parse Patient Data
-    const parsedData = this._changeToJSON(patientData);
-
     try {
+      const clientMSP = ledger.getMSPID(ctx);
+      if (clientMSP !== "DoctorMSP") {
+        throw new Error("You don't have the privilege to write prescriptions!");
+      }
+
+      const patientData = await ledger.queryRecord(ctx, patientId);
+      console.log(patientData);
+      // If patient is not found
+      if (patientData instanceof Error) {
+        // TODO: Change to throw
+        return patientData;
+      }
+
+      // Parse Patient Data
+      const parsedData = this._changeToJSON(patientData);
+
+      const prescriptionData = await this._createPrescriptionObject(
+        ctx,
+        prescription
+      );
+      if (prescription instanceof Error) {
+        // TODO: Change to throw
+        return "Medicine is not covred by insurance!";
+      }
+
       await this._updatePrescription(
         ctx,
         parsedData,
         issuingDoctor,
-        prescription
+        prescriptionData
       );
       return "Updated the prescription seccessfully!";
     } catch (error) {
       throw new Error(
-        "Error occurred while updating the patient prescription!"
+        `Error occurred while updating the patient prescription!, ${error}`
       );
     }
   }
@@ -272,118 +241,111 @@ class EHRContract extends Contract {
     throw new Error("There is no prescription with the entered Id");
   }
 
-  _modifyPrescription(prescription, parsedPharmacyData, clientMSP) {
-    prescription.state =
-      clientMSP === "PharmacyMSP" ? "confirmed1" : "confirmed2";
+  _confirmPrescriptionSalePatient(prescription) {
+    prescription.state = "purchased";
+    // TODO: Add balance calculations
+  }
+
+  async _calculatePrescriptionCost(ctx, prescription) {
+    const medListDB = await ledger.queryRecord(ctx, "Medicines");
+    const medListDBParsed = this._changeToJSON(medListDB);
+    let totalCost = 0;
+
+    for (const medicine of prescription) {
+      const medicineName = medicine.medicineName;
+
+      const medicineDB = medListDBParsed.find(
+        (medicine) => medicine.name === medicineName
+      );
+
+      totalCost += parseInt(medicineDB.cost);
+    }
+    return totalCost;
+  }
+
+  async _criteriaCheck(patientData) {
+    if (patientData.insuranceInformation.state !== "active") {
+      throw new Error(
+        "This patient does not have active insurance subscription!"
+      );
+    }
+  }
+
+  async _insuranceCheck(ctx, patientData, prescription) {
+    const totalPrescriptionCost = await this._calculatePrescriptionCost(
+      ctx,
+      prescription
+    );
+
+    if (patientData.balance.remainingBalance < totalPrescriptionCost) {
+      throw new Error("Patient does not have sufficient balace!");
+    } else {
+      patientData.balance.remainingBalance -= totalPrescriptionCost;
+    }
+  }
+
+  _confirmPrescriptionSalePharmacy(prescription, parsedPharmacyData) {
+    prescription.state = "confirmed1";
     prescription.pharmacyName = parsedPharmacyData.pharmacyName;
     prescription.phramacyAddress = parsedPharmacyData.phramacyAddress;
   }
 
-  // Method for pharmacy to confirm sale of prescription
-  async confirmPrescriptionSalePharmacy(ctx, patientId, pharmacyId, presId) {
-    const patientData = await this._queryRecord(ctx, patientId);
-    if (patientData instanceof Error) {
-      return patientData;
-    }
-
-    const pharmacyData = await this._queryRecord(ctx, pharmacyId);
-    if (pharmacyData instanceof Error) {
-      return pharmacyData;
-    }
-
-    //Parse Data
-    const parsedPatientData = this._changeToJSON(patientData);
-    const parsedPharmacyData = this._changeToJSON(pharmacyData);
-
-    const prescription = this._getPrescriptionById(
-      parsedPatientData.prescription,
-      presId
-    );
-    if (prescription instanceof Error) {
-      return prescription;
-    }
-
-    const clientMSP = this._getMSPID(ctx);
-    if (clientMSP !== "PharmacyMSP" && clientMSP !== "MinistryofhealthMSP") {
-      throw new Error("Access Denied!");
-    }
-    if (clientMSP === "PharmacyMSP" && prescription.state !== "issued") {
-      return "Prescription already confirmed by a pharmacy!";
-    } else if (
-      clientMSP === "MinistryofhealthMSP" &&
-      prescription.state !== "confirmed1"
-    ) {
-      return "Prescription must be confirmed by a pharmacy first!";
-    }
-
-    // TODO: Insurance Check
-    this._modifyPrescription(prescription, parsedPharmacyData, clientMSP);
-
+  async confirmPrescriptionSale(ctx, patientId, pharmacyId, presId) {
     try {
-      await ctx.stub.putState(
+      const patientData = await ledger.queryRecord(ctx, patientId);
+      if (patientData instanceof Error) {
+        return patientData;
+      }
+
+      const pharmacyData = await ledger.queryRecord(ctx, pharmacyId);
+      if (pharmacyData instanceof Error) {
+        return pharmacyData;
+      }
+
+      //Parse Data
+      const parsedPatientData = this._changeToJSON(patientData);
+      const parsedPharmacyData = this._changeToJSON(pharmacyData);
+
+      const prescription = this._getPrescriptionById(
+        parsedPatientData.prescription,
+        presId
+      );
+      if (prescription instanceof Error) {
+        // TODO: Change to throw
+        return prescription;
+      }
+
+      const clientMSP = ledger.getMSPID(ctx);
+      if (clientMSP !== "PharmacyMSP" && clientMSP !== "MinistryofhealthMSP") {
+        throw new Error("Access Denied!");
+      } else if (prescription.state === "purchased") {
+        // Change to throw
+        return "Prescription already purchased!";
+      }
+
+      // criteria check
+      this._criteriaCheck(parsedPatientData);
+
+      if (clientMSP === "MinistryofhealthMSP") {
+        await this._insuranceCheck(
+          ctx,
+          parsedPatientData,
+          prescription.medicines
+        );
+        this._confirmPrescriptionSalePatient(prescription);
+      } else if (clientMSP === "PharmacyMSP") {
+        this._confirmPrescriptionSalePharmacy(prescription, parsedPharmacyData);
+      }
+
+      await ledger.writeRecord(
+        ctx,
         parsedPatientData.patientID,
-        Buffer.from(stringify(parsedPatientData))
+        parsedPatientData
       );
       return "Confirmed the prescription successfully!";
     } catch (error) {
-      throw new Error("Error occurred while confirming patient prescription!");
-    }
-  }
-
-  async _getAndIncIdCounter(ctx, counterKey) {
-    try {
-      let counterData = await ctx.stub.getState(counterKey);
-      let parsedCounterData = this._changeToJSON(counterData);
-      let counterValue = parseInt(parsedCounterData.lastId);
-
-      counterValue++;
-      parsedCounterData.lastId = counterValue.toString();
-
-      await ctx.stub.putState(
-        counterKey,
-        Buffer.from(stringify(parsedCounterData))
-      );
-
-      return counterValue;
-    } catch (error) {
-      throw new Error(`Error while incrementing id! ${error}`);
-    }
-  }
-
-  _getUserKey(userType) {
-    if (userType === "patient") return lastIdPatientKey;
-    else if (userType === "pharmacy") return lastIdPharmacyKey;
-    else if (userType === "doctor") return lastIdDoctorKey;
-    else if (userType === "insurance") return lastIdInsurancekey;
-    else return new Error("Invalid user type entered!");
-  }
-
-  async _addRecordToLedger(ctx, recordId, recordData) {
-    try {
-      await ctx.stub.putState(recordId, Buffer.from(stringify(recordData)));
-    } catch (error) {
-      throw new Error(`Error writing to ledger ${error}`);
-    }
-  }
-
-  async addUser(ctx, recordData, userType) {
-    if (!recordData) {
-      return "Must Enter recordData";
-    }
-
-    const userKey = this._getUserKey(userType);
-    if (userKey instanceof Error) return userKey;
-
-    const newRecordId = await this._getAndIncIdCounter(ctx, userKey);
-    if (newRecordId instanceof Error) return newRecordId;
-
-    try {
-      const newId = `${userType}${newRecordId}`;
-      const tempObject = { recordId: newId, something: `Something ${newId}` };
-      await this._addRecordToLedger(ctx, newId, tempObject);
-      return "Successfully added new user!";
-    } catch (error) {
-      return "Error adding new record";
+      // TODO: Change to throw
+      return `Error while confirming prescription, ${error}`;
     }
   }
 }
@@ -425,6 +387,7 @@ const patientRecords = [
     insuranceInformation: {
       provider: "Insurance Co.",
       policyNumber: "ins1",
+      state: "active",
     },
     prescription: [
       {
@@ -457,6 +420,10 @@ const patientRecords = [
         ],
       },
     ],
+    balance: {
+      remainingBalance: "100",
+      claimedBalance: "500",
+    },
   },
   {
     patientID: "patient2",
@@ -490,6 +457,7 @@ const patientRecords = [
     insuranceInformation: {
       provider: "HealthCare Inc.",
       policyNumber: "ins222",
+      state: "active",
     },
     prescription: [
       {
@@ -517,6 +485,10 @@ const patientRecords = [
         ],
       },
     ],
+    balance: {
+      remainingBalance: "200",
+      claimedBalance: "700",
+    },
   },
 ];
 
@@ -534,5 +506,36 @@ const pharmacyRecords = [
 ];
 
 const doctorRecords = [];
-
 const insuranceRecords = [];
+/* prettier-ignore */
+const medicineList = [
+  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 150 },
+  { name: "Ibuprofen", description: "Pain reliever and fever reducer, 200mg tablets", cost: 18 },
+  { name: "Acetaminophen", description: "Pain reliever and fever reducer, 500mg tablets", cost: 12 },
+  { name: "Diphenhydramine", description: "Antihistamine, Sleep aid, 25mg tablets", cost: 10 },
+  { name: "Loratadine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 14 },
+  { name: "Cetirizine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 13 },
+  { name: "Amoxicillin", description: "Antibiotic, 500mg capsules", cost: 35 },
+  { name: "Azithromycin", description: "Antibiotic, 250mg tablets", cost: 40 },
+  { name: "Cephalexin", description: "Antibiotic, 500mg capsules", cost: 32 },
+  { name: "Albuterol", description: "Asthma inhaler", cost: 25 },
+  { name: "Salbutamol", description: "Asthma inhaler", cost: 22 },
+  { name: "Prednisone", description: "Steroid, 5mg tablets", cost: 30 },
+  { name: "Fluticasone", description: "Steroid inhaler", cost: 28 },
+  { name: "Metformin", description: "Diabetes medication, 500mg tablets", cost: 45 },
+  { name: "Glimepiride", description: "Diabetes medication, 2mg tablets", cost: 42 },
+  { name: "Insulin", description: "Diabetes medication (Varies by dose)", cost: 50 },
+  { name: "Atorvastatin", description: "Cholesterol medication, 20mg tablets", cost: 38 },
+  { name: "Simvastatin", description: "Cholesterol medication, 40mg tablets", cost: 40 },
+  { name: "Rosuvastatin", description: "Cholesterol medication, 10mg tablets", cost: 35 },
+  { name: "Lisinopril", description: "Blood pressure medication, 20mg tablets", cost: 28 },
+  { name: "Hydrochlorothiazide", description: "Blood pressure medication, 25mg tablets", cost: 20 },
+  { name: "Losartan", description: "Blood pressure medication, 50mg tablets", cost: 32 },
+  { name: "Escitalopram", description: "Antidepressant, 10mg tablets", cost: 25 },
+  { name: "Sertraline", description: "Antidepressant, 50mg tablets", cost: 30 },
+  { name: "Fluoxetine", description: "Antidepressant, 20mg tablets", cost: 22 },
+  { name: "Citalopram", description: "Antidepressant, 20mg tablets", cost: 28 },
+  { name: "Lexapro", description: "Antidepressant (Escitalopram), 10mg tablets", cost: 25 },
+  { name: "Zoloft", description: "Antidepressant (Sertraline), 50mg tablets", cost: 30 },
+  { name: "Prozac", description: "Antidepressant (Fluoxetine), 20mg tablets", cost: 22 },
+];

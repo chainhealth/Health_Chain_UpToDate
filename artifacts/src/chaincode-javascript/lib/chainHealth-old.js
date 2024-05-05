@@ -1,9 +1,22 @@
 "use strict";
 
 const stringify = require("json-stringify-deterministic");
-const sortKeysRecursive = require("sort-keys-recursive");
 const { Contract } = require("fabric-contract-api");
 const ClientIdentity = require("fabric-shim").ClientIdentity;
+
+const lastIdPatientKey = "patientIdCounter";
+const lastIdDoctorKey = "doctorIdCounter";
+const lastIdPharmacyKey = "pharmacyIdCounter";
+const lastIdInsurancekey = "insuranceIdCounter";
+
+// TODO: Insurance check (Check that the user is a member, check that remaining balance is greater than zero)
+// TODO: Criteria Check
+// TODO: Error handling
+// TODO: Balance (The remaining balance of the claimed) and claimed (What he ordered)
+// TODO: Add random medications each with a random value to be suntracted from balance
+// TODO: API calls (Last thing)
+// TODO: Login functionality, using bcrypt library (HASH and salt rounds)
+// TODO: Pagination functionality (Insurance (patient data), Patient (Medications), pharmacy (Medictaions)) (Done by peter)
 
 class EHRContract extends Contract {
   // Initialization method for ledger data
@@ -13,14 +26,53 @@ class EHRContract extends Contract {
         // Storing patient record in the ledger
         await ctx.stub.putState(
           patientRecord.patientID,
-          Buffer.from(stringify(sortKeysRecursive(patientRecord)))
+          Buffer.from(stringify(patientRecord))
         );
       }
+      // Storing pharmacy record in the ledger
+      for (const pharmacyRecord of pharmacyRecords) {
+        // Storing patient record in the ledger
+        await ctx.stub.putState(
+          pharmacyRecord.pharmacyId,
+          Buffer.from(stringify(pharmacyRecord))
+        );
+      }
+      const patientLength = patientRecords.length.toString();
+      const pharmacyLength = pharmacyRecords.length.toString();
+      const doctorLength = doctorRecords.length.toString();
+      const insuranceLength = doctorRecords.length.toString();
+
+      const patientCounterId = {
+        name: lastIdPatientKey,
+        lastId: patientLength,
+      };
+      const pharmacyCounterId = {
+        name: lastIdPatientKey,
+        lastId: pharmacyLength,
+      };
+      const doctorCounterId = {
+        name: lastIdPatientKey,
+        lastId: doctorLength,
+      };
+      const insuranceCounterId = {
+        name: lastIdPatientKey,
+        lastId: insuranceLength,
+      };
+      await ctx.stub.putState(lastIdPatientKey, stringify(patientCounterId));
+      await ctx.stub.putState(lastIdPharmacyKey, stringify(pharmacyCounterId));
+      await ctx.stub.putState(lastIdDoctorKey, stringify(doctorCounterId));
+      await ctx.stub.putState(
+        lastIdInsurancekey,
+        stringify(insuranceCounterId)
+      );
+
+      return "Successfully initialized the ledger";
     } catch (err) {
-      throw new Error("Error while initializing the ledger!");
+      throw new Error(`${"Error while initializing the ledger!"}: ${err}`);
     }
   }
 
+  // TODO: must be deleted
   // Method to retrieve all records from the ledger
   async getAllRecords(ctx) {
     try {
@@ -60,29 +112,6 @@ class EHRContract extends Contract {
     return temp;
   }
 
-  // Private method to retrieve a specific record
-  async _getRecord(ctx, recordNumber) {
-    try {
-      const recordID = `PATIENT${recordNumber}`;
-      const asset = await ctx.stub.getState(recordID);
-      return asset;
-    } catch (err) {
-      throw new Error("Error getting the requested record!");
-    }
-  }
-
-  // Method to query a specific record
-  async queryRecord(ctx, recordNumber) {
-    const asset = await this._getRecord(ctx, recordNumber);
-    if (asset instanceof Error) {
-      return asset;
-    }
-    if (!asset || asset.length === 0) {
-      throw new Error(`The asset with id ${recordNumber} does not exist`);
-    }
-    return asset.toString();
-  }
-
   // Private method to get MSP ID from the client identity
   _getMSPID(ctx) {
     const clientIdentity = new ClientIdentity(ctx.stub);
@@ -90,63 +119,95 @@ class EHRContract extends Contract {
     return clientMSP;
   }
 
-  // Private method to retrieve patient record data based on personal information
-  async _getPatientRecordData(ctx, firstName, lastName, email) {
-    let queryString = {};
-    queryString.selector = {
-      "personalInformation.firstName": firstName,
-      "personalInformation.lastName": lastName,
-      "personalInformation.contactInformation.email": email,
-    };
-    let iterator = await ctx.stub.getQueryResult(JSON.stringify(queryString));
-    const patientRecord = await this._getIteratorData(iterator);
-    const patientRecordJSON = this._changeToJSON(patientRecord)[0];
-    return patientRecordJSON;
+  // Private method to retrieve a specific record
+  async _getRecord(ctx, patientId) {
+    try {
+      const asset = await ctx.stub.getState(patientId);
+      return asset;
+    } catch (err) {
+      throw new Error("Error getting the requested record!");
+    }
   }
 
-  // Method to get patient record based on personal information, with access control
-  async getPatientRecord(ctx, firstName, lastName, email) {
-    const clientMSP = this._getMSPID(ctx);
-    const patientDataJSON = await this._getPatientRecordData(
-      ctx,
-      firstName,
-      lastName,
-      email
-    );
-    if (!patientDataJSON) {
-      throw new Error("No Record for this patient!");
+  // Method to query a specific record
+  async _queryRecord(ctx, patientId) {
+    const asset = await this._getRecord(ctx, patientId);
+    if (asset instanceof Error) {
+      return asset;
+    }
+    if (!asset || asset.length === 0) {
+      throw new Error(`The asset with id ${patientId} does not exist`);
+    }
+    return asset.toString();
+  }
+
+  // Method to check patient by id
+  async getPatientInfo(ctx, patientId) {
+    const patientData = await this._queryRecord(ctx, patientId);
+    // If patient is not found
+    if (patientData instanceof Error) {
+      return patientData;
     }
 
-    // Access control based on MSP ID
-    if (clientMSP === "InsuranceMSP") {
-      const patientInsuranceInformation = patientDataJSON.insuranceInformation;
-      return JSON.stringify(patientInsuranceInformation);
-    } else if (clientMSP === "PharmacyMSP") {
-      const patientMedication = patientDataJSON.medicalHistory.medications;
-      return JSON.stringify(patientMedication);
+    // Parse the patient data
+    const parsedData = this._changeToJSON(patientData);
+
+    const clientMSP = this._getMSPID(ctx);
+
+    // Return the desired patient information
+    if (clientMSP === "DoctorMSP") {
+      return {
+        firstName: parsedData.personalInformation.firstName,
+        lastName: parsedData.personalInformation.lastName,
+        dateOfBirth: parsedData.personalInformation.dateOfBirth,
+        gender: parsedData.personalInformation.gender,
+        medicalHistory: parsedData.medicalHistory,
+        prescription: parsedData.prescription,
+      };
+    } else if (clientMSP === "InsuranceMSP") {
+      return {
+        firstName: parsedData.personalInformation.firstName,
+        lastName: parsedData.personalInformation.lastName,
+        dateOfBirth: parsedData.personalInformation.dateOfBirth,
+        gender: parsedData.personalInformation.gender,
+        insuranceInformation: parsedData.insuranceInformation,
+      };
     } else if (clientMSP === "MinistryofhealthMSP") {
-      return JSON.stringify(patientDataJSON);
+      return parsedData;
+    } else if (clientMSP === "PharmacyMSP") {
+      return {
+        firstName: parsedData.personalInformation.firstName,
+        lastName: parsedData.personalInformation.lastName,
+        dateOfBirth: parsedData.personalInformation.dateOfBirth,
+        gender: parsedData.personalInformation.gender,
+        prescription: parsedData.prescription,
+      };
     } else {
       throw new Error("You don't have access to this record!");
     }
   }
 
-  // Method to read patient prescription
-  async readPatientPrescription(ctx, firstName, lastName, email) {
-    const patientDataJSON = await this._getPatientRecordData(
-      ctx,
-      firstName,
-      lastName,
-      email
-    );
+  // Return the desired pharmacy information
+  async getPharmacyInfo(ctx, pharmacyId) {
+    const pharmacyData = await this._queryRecord(ctx, pharmacyId);
+    // If pharmacy is not found
+    if (pharmacyData instanceof Error) {
+      return pharmacyData;
+    }
 
-    if (!patientDataJSON) {
-      throw new Error("No Record for this patient!");
+    // Parse the patient data
+    const parsedData = this._changeToJSON(pharmacyData);
+
+    const clientMSP = this._getMSPID(ctx);
+
+    if (clientMSP === "MinistryofhealthMSP") {
+      return {
+        pharmacyName: parsedData.pharmacyName,
+        pharmacyAddress: parsedData.phramacyAddress,
+      };
+    } else {
+      throw new Error("You don't hace access to this record");
     }
-    if (!patientDataJSON.prescription) {
-      throw new Error("This patient doesn't have any current prescription!");
-    }
-    return JSON.stringify(patientDataJSON.prescription);
   }
 
   // Private method to create an array from prescription string
@@ -156,13 +217,23 @@ class EHRContract extends Contract {
   }
 
   // Private method to update patient prescription
-  async _updatePrescription(ctx, patientDataJSON, prescription) {
+  async _updatePrescription(ctx, patientDataJSON, issuingDoctor, prescription) {
     try {
+      // Calulate the prescriptionId
+      const prescriptionId = `pres${patientDataJSON.prescription.length + 1}`;
+
       const prescriptionArray = this._createPrescriptionArray(prescription);
-      patientDataJSON.prescription = prescriptionArray;
+      const prescriptionObject = {
+        prescriptionID: prescriptionId,
+        state: "issued",
+        issuingDoctor: issuingDoctor,
+        medicines: prescriptionArray,
+      };
+      patientDataJSON.prescription.push(prescriptionObject);
+      patientDataJSON.medicalHistory.medications = prescriptionArray;
       await ctx.stub.putState(
         patientDataJSON.patientID,
-        Buffer.from(stringify(sortKeysRecursive(patientDataJSON)))
+        Buffer.from(stringify(patientDataJSON))
       );
     } catch (error) {
       return error;
@@ -170,33 +241,158 @@ class EHRContract extends Contract {
   }
 
   // Method to write patient prescription, with access control
-  async writePatientPrescription(
-    ctx,
-    firstName,
-    lastName,
-    email,
-    prescription
-  ) {
+  async writePatientPrescription(ctx, patientId, issuingDoctor, prescription) {
     const clientMSP = this._getMSPID(ctx);
-    if (clientMSP !== "InsuranceMSP") {
+    if (clientMSP !== "DoctorMSP") {
       throw new Error("You don't have the privilege to write prescriptions!");
     }
 
-    const patientDataJSON = await this._getPatientRecordData(
-      ctx,
-      firstName,
-      lastName,
-      email
-    );
-    if (!patientDataJSON) {
-      throw new Error("No Record for this patient!");
+    const patientData = await this._queryRecord(ctx, patientId);
+    console.log(patientData);
+    // If patient is not found
+    if (patientData instanceof Error) {
+      return patientData;
     }
 
+    // Parse Patient Data
+    const parsedData = this._changeToJSON(patientData);
+
     try {
-      await this._updatePrescription(ctx, patientDataJSON, prescription);
-      return "Updated the prescription successfully!";
+      await this._updatePrescription(
+        ctx,
+        parsedData,
+        issuingDoctor,
+        prescription
+      );
+      return "Updated the prescription seccessfully!";
     } catch (error) {
-      throw new Error("Error while updating the prescription!");
+      throw new Error(
+        "Error occurred while updating the patient prescription!"
+      );
+    }
+  }
+
+  _getPrescriptionById(prescriptionList, prescriptionId) {
+    for (let i = 0; i < prescriptionList.length; i++) {
+      if (prescriptionList[i].prescriptionID === prescriptionId) {
+        return prescriptionList[i];
+      }
+    }
+    throw new Error("There is no prescription with the entered Id");
+  }
+
+  _modifyPrescription(prescription, parsedPharmacyData, clientMSP) {
+    prescription.state =
+      clientMSP === "PharmacyMSP" ? "confirmed1" : "confirmed2";
+    prescription.pharmacyName = parsedPharmacyData.pharmacyName;
+    prescription.phramacyAddress = parsedPharmacyData.phramacyAddress;
+  }
+
+  // Method for pharmacy to confirm sale of prescription
+  async confirmPrescriptionSalePharmacy(ctx, patientId, pharmacyId, presId) {
+    const patientData = await this._queryRecord(ctx, patientId);
+    if (patientData instanceof Error) {
+      return patientData;
+    }
+
+    const pharmacyData = await this._queryRecord(ctx, pharmacyId);
+    if (pharmacyData instanceof Error) {
+      return pharmacyData;
+    }
+
+    //Parse Data
+    const parsedPatientData = this._changeToJSON(patientData);
+    const parsedPharmacyData = this._changeToJSON(pharmacyData);
+
+    const prescription = this._getPrescriptionById(
+      parsedPatientData.prescription,
+      presId
+    );
+    if (prescription instanceof Error) {
+      return prescription;
+    }
+
+    const clientMSP = this._getMSPID(ctx);
+    if (clientMSP !== "PharmacyMSP" && clientMSP !== "MinistryofhealthMSP") {
+      throw new Error("Access Denied!");
+    }
+    if (clientMSP === "PharmacyMSP" && prescription.state !== "issued") {
+      return "Prescription already confirmed by a pharmacy!";
+    } else if (
+      clientMSP === "MinistryofhealthMSP" &&
+      prescription.state !== "confirmed1"
+    ) {
+      return "Prescription must be confirmed by a pharmacy first!";
+    }
+
+    // TODO: Insurance Check
+    this._modifyPrescription(prescription, parsedPharmacyData, clientMSP);
+
+    try {
+      await ctx.stub.putState(
+        parsedPatientData.patientID,
+        Buffer.from(stringify(parsedPatientData))
+      );
+      return "Confirmed the prescription successfully!";
+    } catch (error) {
+      throw new Error("Error occurred while confirming patient prescription!");
+    }
+  }
+
+  async _getAndIncIdCounter(ctx, counterKey) {
+    try {
+      let counterData = await ctx.stub.getState(counterKey);
+      let parsedCounterData = this._changeToJSON(counterData);
+      let counterValue = parseInt(parsedCounterData.lastId);
+
+      counterValue++;
+      parsedCounterData.lastId = counterValue.toString();
+
+      await ctx.stub.putState(
+        counterKey,
+        Buffer.from(stringify(parsedCounterData))
+      );
+
+      return counterValue;
+    } catch (error) {
+      throw new Error(`Error while incrementing id! ${error}`);
+    }
+  }
+
+  _getUserKey(userType) {
+    if (userType === "patient") return lastIdPatientKey;
+    else if (userType === "pharmacy") return lastIdPharmacyKey;
+    else if (userType === "doctor") return lastIdDoctorKey;
+    else if (userType === "insurance") return lastIdInsurancekey;
+    else return new Error("Invalid user type entered!");
+  }
+
+  async _addRecordToLedger(ctx, recordId, recordData) {
+    try {
+      await ctx.stub.putState(recordId, Buffer.from(stringify(recordData)));
+    } catch (error) {
+      throw new Error(`Error writing to ledger ${error}`);
+    }
+  }
+
+  async addUser(ctx, recordData, userType) {
+    if (!recordData) {
+      return "Must Enter recordData";
+    }
+
+    const userKey = this._getUserKey(userType);
+    if (userKey instanceof Error) return userKey;
+
+    const newRecordId = await this._getAndIncIdCounter(ctx, userKey);
+    if (newRecordId instanceof Error) return newRecordId;
+
+    try {
+      const newId = `${userType}${newRecordId}`;
+      const tempObject = { recordId: newId, something: `Something ${newId}` };
+      await this._addRecordToLedger(ctx, newId, tempObject);
+      return "Successfully added new user!";
+    } catch (error) {
+      return "Error adding new record";
     }
   }
 }
@@ -207,7 +403,7 @@ module.exports = EHRContract;
 // Sample patient records for ledger initialization
 const patientRecords = [
   {
-    patientID: "ph1",
+    patientID: "patient1",
     personalInformation: {
       firstName: "Seifeldin",
       lastName: "Sami",
@@ -270,9 +466,13 @@ const patientRecords = [
         ],
       },
     ],
+    balance: {
+      remainingBalance: "100",
+      claimedBalance: "500",
+    },
   },
   {
-    patientID: "ph2",
+    patientID: "patient2",
     personalInformation: {
       firstName: "Aisha",
       lastName: "Khan",
@@ -330,5 +530,26 @@ const patientRecords = [
         ],
       },
     ],
+    balance: {
+      remainingBalance: "200",
+      claimedBalance: "700",
+    },
   },
 ];
+
+const pharmacyRecords = [
+  {
+    pharmacyId: "pharmacy1",
+    pharmacyName: "El-Ezaby",
+    phramacyAddress: "Al-Rehab 2",
+  },
+  {
+    pharmacyId: "pharmacy2",
+    pharmacyName: "El-Tarshouby",
+    phramacyAddress: "Nasr City",
+  },
+];
+
+const doctorRecords = [];
+
+const insuranceRecords = [];
