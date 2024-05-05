@@ -509,7 +509,7 @@ const doctorRecords = [];
 const insuranceRecords = [];
 /* prettier-ignore */
 const medicineList = [
-  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 150 },
+  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 15 },
   { name: "Ibuprofen", description: "Pain reliever and fever reducer, 200mg tablets", cost: 18 },
   { name: "Acetaminophen", description: "Pain reliever and fever reducer, 500mg tablets", cost: 12 },
   { name: "Diphenhydramine", description: "Antihistamine, Sleep aid, 25mg tablets", cost: 10 },
