@@ -15,6 +15,7 @@
     "author": "Health_Chain",
     "license": "Apache-2.0",
     "dependencies": {
+        "crypto": "^1.0.1",
         "fabric-contract-api": "2.5.4",
         "fabric-shim": "2.5.4",
         "json-stringify-deterministic": "1.0.12"

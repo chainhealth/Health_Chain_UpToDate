@@ -341,6 +341,20 @@ confirmPrescriptionSalePatient() {
     echo "===================== Chaincode confirmPrescriptionSalePatient Finished ===================== "
 }
 
+loginError() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "login","Args":["patient1", "seif1234"]}'
+    
+    echo "===================== Chaincode loginError Finished ===================== "
+}
+
+loginSuccess() {
+    setGlobalsForPeer0ministryofhealth
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "login","Args":["patient1", "seif12345"]}'
+    
+    echo "===================== Chaincode loginSuccess Finished ===================== "
+}
+
 # addUserPatient() {
 #     setGlobalsForPeer0ministryofhealth
 #     ./bin/peer chaincode invoke -o localhost:7050 \
@@ -482,5 +496,13 @@ sleep 3
 # echo ""
 # chaincodeQueryInit
 # sleep 3
+
+echo ""
+loginError
+sleep 3
+
+echo ""
+loginSuccess
+sleep 3
 
 echo "===================== Finished Program ===================== " 

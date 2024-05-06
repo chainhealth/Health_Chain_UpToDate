@@ -2,12 +2,9 @@
 
 const Ledger = require("./ledger.js");
 const { Contract } = require("fabric-contract-api");
+const crypto = require("crypto");
 
 const ledger = new Ledger();
-const lastIdPatientKey = "patientIdCounter";
-const lastIdDoctorKey = "doctorIdCounter";
-const lastIdPharmacyKey = "pharmacyIdCounter";
-const lastIdInsurancekey = "insuranceIdCounter";
 
 // TODO: API calls (Last thing)
 // TODO: Login functionality, using bcrypt library (HASH and salt rounds)
@@ -26,6 +23,8 @@ class EHRContract extends Contract {
     try {
       // Storing patient data
       for (const patientRecord of patientRecords) {
+        const hashedPassword = this.hashPassword(patientRecord.password);
+        patientRecord.password = hashedPassword;
         await ledger.writeRecord(ctx, patientRecord.patientID, patientRecord);
       }
 
@@ -348,6 +347,29 @@ class EHRContract extends Contract {
       return `Error while confirming prescription, ${error}`;
     }
   }
+
+  hashPassword(password) {
+    const hash = crypto.createHash("sha256");
+    hash.update(password);
+    return hash.digest("hex");
+  }
+
+  async login(ctx, username, enteredPassword) {
+    const patientData = await ledger.queryRecord(ctx, username);
+    if (patientData instanceof Error) {
+      return patientData;
+    }
+
+    const patientDataParsed = this._changeToJSON(patientData);
+    const hashedPassword = patientDataParsed.password;
+    const hashedEnteredPassword = this.hashPassword(enteredPassword);
+
+    if (hashedPassword === hashedEnteredPassword) {
+      return "Login success!";
+    } else {
+      return "Wrong username or password!";
+    }
+  }
 }
 
 // Exporting the EHRContract class
@@ -357,6 +379,7 @@ module.exports = EHRContract;
 const patientRecords = [
   {
     patientID: "patient1",
+    password: "seif12345",
     personalInformation: {
       firstName: "Seifeldin",
       lastName: "Sami",
@@ -427,6 +450,7 @@ const patientRecords = [
   },
   {
     patientID: "patient2",
+    password: "Aisha12345",
     personalInformation: {
       firstName: "Aisha",
       lastName: "Khan",
@@ -509,7 +533,7 @@ const doctorRecords = [];
 const insuranceRecords = [];
 /* prettier-ignore */
 const medicineList = [
-  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 150 },
+  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 15 },
   { name: "Ibuprofen", description: "Pain reliever and fever reducer, 200mg tablets", cost: 18 },
   { name: "Acetaminophen", description: "Pain reliever and fever reducer, 500mg tablets", cost: 12 },
   { name: "Diphenhydramine", description: "Antihistamine, Sleep aid, 25mg tablets", cost: 10 },
