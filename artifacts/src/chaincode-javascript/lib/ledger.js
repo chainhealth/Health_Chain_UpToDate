@@ -5,23 +5,19 @@ const { Contract } = require("fabric-contract-api");
 const ClientIdentity = require("fabric-shim").ClientIdentity;
 
 class Ledger extends Contract {
+  /**
+   * Writes a record to the ledger.
+   * @param {Context} ctx The transaction context
+   * @param {string} key The key under which to store the record
+   * @param {object} record The record to store
+   * @throws {Error} If an error occurs while writing the record
+   */
   async writeRecord(ctx, key, record) {
     try {
       await ctx.stub.putState(key, Buffer.from(stringify(record)));
     } catch (error) {
       throw new Error(`Error while writing a record, ${error}`);
     }
-  }
-
-  // Private method to convert string to JSON
-  _changeToJSON(strValue) {
-    let temp;
-    try {
-      temp = JSON.parse(strValue);
-    } catch (error) {
-      temp = strValue;
-    }
-    return temp;
   }
 
   // Private method to convert iterator data to JSON
@@ -32,14 +28,19 @@ class Ledger extends Contract {
       const strValue = Buffer.from(result.value.value.toString()).toString(
         "utf8"
       );
-      const record = this._changeToJSON(strValue);
+      const record = JSON.parse(strValue);
       allRecords.push(record);
       result = await iterator.next();
     }
     return JSON.stringify(allRecords);
   }
 
-  // Method to retrieve all records from the ledger
+  /**
+   * Retrievs all methods in the database
+   * @param {Context} ctx The transaction context
+   * @returns {string} All records
+   * @throws {Error} If the records cannot be retrieved
+   */
   async getAllRecords(ctx) {
     try {
       // range query with empty string for startKey and endKey does an open-ended query of all assets in the chaincode namespace.
@@ -51,7 +52,11 @@ class Ledger extends Contract {
     }
   }
 
-  // Private method to get MSP ID from the client identity
+  /**
+   * Get MSPID
+   * @param {Context} ctx The transaction context
+   * @returns {string} The record MSPID
+   */
   getMSPID(ctx) {
     const clientIdentity = new ClientIdentity(ctx.stub);
     const clientMSP = clientIdentity.getMSPID();
@@ -68,6 +73,13 @@ class Ledger extends Contract {
     }
   }
 
+  /**
+   * Retrieves a specific record from the ledger.
+   * @param {Context} ctx The transaction context
+   * @param {string} patientId The ID of the patient record to retrieve
+   * @returns {string} The JSON string representation of the record
+   * @throws {Error} If the record cannot be retrieved
+   */
   async queryRecord(ctx, patientId) {
     try {
       const asset = await this._getRecord(ctx, patientId);

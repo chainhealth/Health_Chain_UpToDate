@@ -4,8 +4,6 @@
 # This enables finer-grained control over cryptographic materials and permissions for each node type.
 # Separate cryptographic keys and certificates can be used for administrators, peers, and clients.
 
-
-
 OrdererOrgs:
   - Name: Orderer
     Domain: chainhealth.com

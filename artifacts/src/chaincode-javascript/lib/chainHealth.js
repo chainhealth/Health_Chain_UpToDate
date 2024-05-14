@@ -6,24 +6,27 @@ const crypto = require("crypto");
 
 const ledger = new Ledger();
 
-// TODO: API calls (Last thing)
-// TODO: Login functionality, using bcrypt library (HASH and salt rounds)
-// TODO: Pagination functionality (Insurance (patient data), Patient (Medications), pharmacy (Medictaions))
-
-// Done:
-// 1- Added cost to medicines
-// 2- Refactored the code
-// 3- Fixed confirmation function
-// 4- Insurance check (insurance state (active or not) and balance check)
-// 5- Criteria check
-// 5- Error handling
+/* prettier-ignore */
+const ERROR_MESSAGES = {
+  INIT_LEDGER: "Error occurred while initializing ledger: ",
+  GET_RECORD: "Error occurred while getting record: ",
+  UPDATE_PRESCRIPTION: "Error occurred while updating the patient prescription: ",
+  CONFIRM_PRESCRIPTION: "Error occurred while confirming prescription: ",
+  LOGIN: "Invalid username or password!"
+};
 
 class EHRContract extends Contract {
+  /**
+   * Initializes the ledger with initial data.
+   * @param {Context} ctx The transaction context.
+   * @returns {string} A message indicating the success of ledger initialization.
+   * @throws {Error} If an error occurs during ledger initialization.
+   */
   async InitLedger(ctx) {
     try {
       // Storing patient data
       for (const patientRecord of patientRecords) {
-        const hashedPassword = this.hashPassword(patientRecord.password);
+        const hashedPassword = this._hashPassword(patientRecord.password);
         patientRecord.password = hashedPassword;
         await ledger.writeRecord(ctx, patientRecord.patientID, patientRecord);
       }
@@ -38,96 +41,99 @@ class EHRContract extends Contract {
 
       return "Successfully initialized the ledger!";
     } catch (error) {
-      // TODO Change to throw
-      return `Error occured while initializing record, ${error}`;
+      throw new Error(ERROR_MESSAGES.INIT_LEDGER + error);
     }
   }
 
-  // Private method to convert string to JSON
-  _changeToJSON(strValue) {
-    let temp;
-    try {
-      temp = JSON.parse(strValue);
-    } catch (error) {
-      temp = strValue;
-    }
-    return temp;
-  }
-
+  /**
+   * Retrieves all records from the ledger.
+   * @param {Context} ctx The transaction context.
+   * @returns {string} JSON string representing all records.
+   * @throws {Error} If an error occurs while retrieving records.
+   */
   async getAllRecords(ctx) {
     try {
-      const recordData = await ledger.getAllRecords(ctx);
-      return recordData;
+      return await ledger.getAllRecords(ctx);
     } catch (error) {
-      // TODO: Change to throw
-      return `Error occured while getting all record, ${error}`;
+      throw new Error(ERROR_MESSAGES.GET_RECORD + error);
     }
   }
 
+  /**
+   * Retrieves patient information based on the provided patient ID.
+   * @param {Context} ctx The transaction context.
+   * @param {string} patientId The ID of the patient.
+   * @returns {object} Patient information.
+   * @throws {Error} If an error occurs while retrieving patient information.
+   */
   async getPatientInfo(ctx, patientId) {
     try {
       const patientData = await ledger.queryRecord(ctx, patientId);
       if (patientData instanceof Error) {
-        // TODO: Change to throw
-        return patientData;
+        throw patientData;
       }
 
       // parse the patient Data
-      const parsedData = this._changeToJSON(patientData);
-
+      const parsedData = JSON.parse(patientData);
       const clientMSP = ledger.getMSPID(ctx);
 
       // Return the desired patient information
-      if (clientMSP === "DoctorMSP") {
-        return {
-          firstName: parsedData.personalInformation.firstName,
-          lastName: parsedData.personalInformation.lastName,
-          dateOfBirth: parsedData.personalInformation.dateOfBirth,
-          gender: parsedData.personalInformation.gender,
-          medicalHistory: parsedData.medicalHistory,
-          prescription: parsedData.prescription,
-        };
-      } else if (clientMSP === "InsuranceMSP") {
-        return {
-          firstName: parsedData.personalInformation.firstName,
-          lastName: parsedData.personalInformation.lastName,
-          dateOfBirth: parsedData.personalInformation.dateOfBirth,
-          gender: parsedData.personalInformation.gender,
-          insuranceInformation: parsedData.insuranceInformation,
-        };
-      } else if (clientMSP === "MinistryofhealthMSP") {
-        return parsedData;
-      } else if (clientMSP === "PharmacyMSP") {
-        return {
-          firstName: parsedData.personalInformation.firstName,
-          lastName: parsedData.personalInformation.lastName,
-          dateOfBirth: parsedData.personalInformation.dateOfBirth,
-          gender: parsedData.personalInformation.gender,
-          prescription: parsedData.prescription,
-        };
-      } else {
-        // Change to throw
-        return "You don't have access to this record!";
+      let info;
+      switch (clientMSP) {
+        case "DoctorMSP":
+        case "PharmacyMSP":
+          info = {
+            firstName: parsedData.personalInformation.firstName,
+            lastName: parsedData.personalInformation.lastName,
+            dateOfBirth: parsedData.personalInformation.dateOfBirth,
+            gender: parsedData.personalInformation.gender,
+          };
+          if (clientMSP === "DoctorMSP") {
+            info.medicalHistory = parsedData.medicalHistory;
+            info.prescription = parsedData.prescription;
+          } else {
+            info.prescription = parsedData.prescription;
+          }
+          break;
+        case "InsuranceMSP":
+          info = {
+            firstName: parsedData.personalInformation.firstName,
+            lastName: parsedData.personalInformation.lastName,
+            dateOfBirth: parsedData.personalInformation.dateOfBirth,
+            gender: parsedData.personalInformation.gender,
+            insuranceInformation: parsedData.insuranceInformation,
+          };
+          break;
+        case "MinistryofhealthMSP":
+          info = parsedData;
+          break;
+        default:
+          throw new Error("You don't have access to this record!");
       }
+      return info;
     } catch (error) {
-      // TODO: Change to throw
-      return `Error while getting record, ${error}`;
+      throw new Error(ERROR_MESSAGES.GET_RECORD + error);
     }
   }
 
+  /**
+   * Retrieves pharmacy information based on the provided pharmacy ID.
+   * @param {Context} ctx The transaction context.
+   * @param {string} pharmacyId The ID of the pharmacy.
+   * @returns {object} Pharmacy information.
+   * @throws {Error} If an error occurs while retrieving pharmacy information.
+   */
   async getPharmacyInfo(ctx, pharmacyId) {
     try {
       const pharmacyData = await ledger.queryRecord(ctx, pharmacyId);
 
       // If pharmacy is not found
       if (pharmacyData instanceof Error) {
-        // TODO: Change to throw
-        return pharmacyData;
+        throw pharmacyData;
       }
 
       // Parse the patient data
-      const parsedData = this._changeToJSON(pharmacyData);
-
+      const parsedData = JSON.parse(pharmacyData);
       const clientMSP = ledger.getMSPID(ctx);
 
       if (clientMSP === "MinistryofhealthMSP") {
@@ -139,8 +145,7 @@ class EHRContract extends Contract {
         throw new Error("You don't hace access to this record");
       }
     } catch (error) {
-      // TODO: Change to throw
-      return `${error}`;
+      throw new Error(ERROR_MESSAGES.GET_RECORD + error);
     }
   }
 
@@ -159,8 +164,7 @@ class EHRContract extends Contract {
       patientDataJSON.medicalHistory.medications = prescription;
       await ledger.writeRecord(ctx, patientDataJSON.patientID, patientDataJSON);
     } catch (error) {
-      // TODO: Change to throw
-      return error;
+      throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION + error);
     }
   }
 
@@ -169,7 +173,7 @@ class EHRContract extends Contract {
     const medicineObject = [];
 
     const medList = await ledger.queryRecord(ctx, "Medicines");
-    const medListParsed = this._changeToJSON(medList);
+    const medListParsed = JSON.parse(medList);
 
     for (const medicineName of medicineNames) {
       const medicine = medListParsed.find(
@@ -182,14 +186,21 @@ class EHRContract extends Contract {
         };
         medicineObject.push(temp);
       } else {
-        // TODO: change to throw
-        return "Medicine is not found!";
+        throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION);
       }
     }
     return medicineObject;
   }
 
-  // Method to write patient prescription, with access control
+  /**
+   * Writes a prescription for a patient.
+   * @param {Context} ctx The transaction context.
+   * @param {string} patientId The ID of the patient.
+   * @param {string} issuingDoctor The doctor issuing the prescription.
+   * @param {string} prescription The prescription details.
+   * @returns {string} A message indicating the success of prescription writing.
+   * @throws {Error} If an error occurs while writing the prescription.
+   */
   async writePatientPrescription(ctx, patientId, issuingDoctor, prescription) {
     try {
       const clientMSP = ledger.getMSPID(ctx);
@@ -201,20 +212,18 @@ class EHRContract extends Contract {
       console.log(patientData);
       // If patient is not found
       if (patientData instanceof Error) {
-        // TODO: Change to throw
-        return patientData;
+        throw patientData;
       }
 
       // Parse Patient Data
-      const parsedData = this._changeToJSON(patientData);
+      const parsedData = JSON.parse(patientData);
 
       const prescriptionData = await this._createPrescriptionObject(
         ctx,
         prescription
       );
       if (prescription instanceof Error) {
-        // TODO: Change to throw
-        return "Medicine is not covred by insurance!";
+        throw prescription;
       }
 
       await this._updatePrescription(
@@ -225,29 +234,26 @@ class EHRContract extends Contract {
       );
       return "Updated the prescription seccessfully!";
     } catch (error) {
-      throw new Error(
-        `Error occurred while updating the patient prescription!, ${error}`
-      );
+      throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION);
     }
   }
 
   _getPrescriptionById(prescriptionList, prescriptionId) {
-    for (let i = 0; i < prescriptionList.length; i++) {
-      if (prescriptionList[i].prescriptionID === prescriptionId) {
-        return prescriptionList[i];
+    for (const prescription of prescriptionList) {
+      if (prescription.prescriptionID === prescriptionId) {
+        return prescription;
       }
     }
-    throw new Error("There is no prescription with the entered Id");
+    throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION);
   }
 
   _confirmPrescriptionSalePatient(prescription) {
     prescription.state = "purchased";
-    // TODO: Add balance calculations
   }
 
   async _calculatePrescriptionCost(ctx, prescription) {
     const medListDB = await ledger.queryRecord(ctx, "Medicines");
-    const medListDBParsed = this._changeToJSON(medListDB);
+    const medListDBParsed = JSON.parse(medListDB);
     let totalCost = 0;
 
     for (const medicine of prescription) {
@@ -264,9 +270,7 @@ class EHRContract extends Contract {
 
   async _criteriaCheck(patientData) {
     if (patientData.insuranceInformation.state !== "active") {
-      throw new Error(
-        "This patient does not have active insurance subscription!"
-      );
+      throw new Error("Inactive insurance subscription!");
     }
   }
 
@@ -277,7 +281,7 @@ class EHRContract extends Contract {
     );
 
     if (patientData.balance.remainingBalance < totalPrescriptionCost) {
-      throw new Error("Patient does not have sufficient balace!");
+      throw new Error("Insufficient balance!");
     } else {
       patientData.balance.remainingBalance -= totalPrescriptionCost;
     }
@@ -289,37 +293,44 @@ class EHRContract extends Contract {
     prescription.phramacyAddress = parsedPharmacyData.phramacyAddress;
   }
 
+  /**
+   * Confirms the sale of a prescription.
+   * @param {Context} ctx The transaction context.
+   * @param {string} patientId The ID of the patient.
+   * @param {string} pharmacyId The ID of the pharmacy.
+   * @param {string} presId The ID of the prescription.
+   * @returns {string} A message indicating the success of prescription sale confirmation.
+   * @throws {Error} If an error occurs while confirming the prescription sale.
+   */
   async confirmPrescriptionSale(ctx, patientId, pharmacyId, presId) {
     try {
       const patientData = await ledger.queryRecord(ctx, patientId);
       if (patientData instanceof Error) {
-        return patientData;
+        throw patientData;
       }
 
       const pharmacyData = await ledger.queryRecord(ctx, pharmacyId);
       if (pharmacyData instanceof Error) {
-        return pharmacyData;
+        throw pharmacyData;
       }
 
       //Parse Data
-      const parsedPatientData = this._changeToJSON(patientData);
-      const parsedPharmacyData = this._changeToJSON(pharmacyData);
+      const parsedPatientData = JSON.parse(patientData);
+      const parsedPharmacyData = JSON.parse(pharmacyData);
 
       const prescription = this._getPrescriptionById(
         parsedPatientData.prescription,
         presId
       );
       if (prescription instanceof Error) {
-        // TODO: Change to throw
-        return prescription;
+        throw prescription;
       }
 
       const clientMSP = ledger.getMSPID(ctx);
       if (clientMSP !== "PharmacyMSP" && clientMSP !== "MinistryofhealthMSP") {
         throw new Error("Access Denied!");
       } else if (prescription.state === "purchased") {
-        // Change to throw
-        return "Prescription already purchased!";
+        throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION);
       }
 
       // criteria check
@@ -343,31 +354,42 @@ class EHRContract extends Contract {
       );
       return "Confirmed the prescription successfully!";
     } catch (error) {
-      // TODO: Change to throw
-      return `Error while confirming prescription, ${error}`;
+      throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error);
     }
   }
 
-  hashPassword(password) {
+  _hashPassword(password) {
     const hash = crypto.createHash("sha256");
     hash.update(password);
     return hash.digest("hex");
   }
 
+  /**
+   * Logs in a user with the provided username and password.
+   * @param {Context} ctx The transaction context.
+   * @param {string} username The username of the user.
+   * @param {string} enteredPassword The entered password of the user.
+   * @returns {string} A message indicating the success of the login process.
+   * @throws {Error} If an error occurs during the login process.
+   */
   async login(ctx, username, enteredPassword) {
-    const patientData = await ledger.queryRecord(ctx, username);
-    if (patientData instanceof Error) {
-      return patientData;
-    }
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) {
+        throw patientData;
+      }
 
-    const patientDataParsed = this._changeToJSON(patientData);
-    const hashedPassword = patientDataParsed.password;
-    const hashedEnteredPassword = this.hashPassword(enteredPassword);
+      const patientDataParsed = JSON.parse(patientData);
+      const hashedPassword = patientDataParsed.password;
+      const hashedEnteredPassword = this._hashPassword(enteredPassword);
 
-    if (hashedPassword === hashedEnteredPassword) {
-      return "Login success!";
-    } else {
-      return "Wrong username or password!";
+      if (hashedPassword === hashedEnteredPassword) {
+        return "Login success!";
+      } else {
+        throw new Error("Invalid username or passwrod!");
+      }
+    } catch (error) {
+      throw new Error(ERROR_MESSAGES.LOGIN);
     }
   }
 }

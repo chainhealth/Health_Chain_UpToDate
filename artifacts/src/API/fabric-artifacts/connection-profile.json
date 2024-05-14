@@ -22,14 +22,24 @@
                 "ca.insurance.chainhealth.com"
             ]
         },
-        "Patient": {
-            "mspid": "PatientMSP",
+        "Ministryofhealth": {
+            "mspid": "MinistryofhealthMSP",
             "peers": [
-                "peer0.patient.chainhealth.com",
-                "peer1.patient.chainhealth.com"
+                "peer0.ministryofhealth.chainhealth.com",
+                "peer1.ministryofhealth.chainhealth.com"
             ],
             "certificateAuthorities": [
-                "ca.patient.chainhealth.com"
+                "ca.ministryofhealth.chainhealth.com"
+            ]
+        },
+        "Doctor": {
+            "mspid": "DoctorMSP",
+            "peers": [
+                "peer0.doctor.chainhealth.com",
+                "peer1.doctor.chainhealth.com"
+            ],
+            "certificateAuthorities": [
+                "ca.doctor.chainhealth.com"
             ]
         }
     },
@@ -78,26 +88,48 @@
                 "hostnameOverride": "peer1.insurance.chainhealth.com"
             }
         },
-        "peer0.patient.chainhealth.com": {
-            "caName": "ca.patient.chainhealth.com",
+        "peer0.ministryofhealth.chainhealth.com": {
+            "caName": "ca.ministryofhealth.chainhealth.com",
             "url": "grpcs://localhost:12051",
             "tlsCACerts": {
-                "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer0.patient.chainhealth.com/msp/tlscacerts/tlsca.patient.chainhealth.com-cert.pem"
+                "path": "../../channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer0.ministryofhealth.chainhealth.com/msp/tlscacerts/tlsca.ministryofhealth.chainhealth.com-cert.pem"
             },
             "grpcOptions": {
-                "ssl-target-name-override": "peer0.patient.chainhealth.com",
-                "hostnameOverride": "peer0.patient.chainhealth.com"
+                "ssl-target-name-override": "peer0.ministryofhealth.chainhealth.com",
+                "hostnameOverride": "peer0.ministryofhealth.chainhealth.com"
             }
         },
-        "peer1.patient.chainhealth.com": {
-            "caName": "ca.patient.chainhealth.com",
+        "peer1.ministryofhealth.chainhealth.com": {
+            "caName": "ca.ministryofhealth.chainhealth.com",
             "url": "grpcs://localhost:13051",
             "tlsCACerts": {
-                "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/peers/peer1.patient.chainhealth.com/msp/tlscacerts/tlsca.patient.chainhealth.com-cert.pem"
+                "path": "../../channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer1.ministryofhealth.chainhealth.com/msp/tlscacerts/tlsca.ministryofhealth.chainhealth.com-cert.pem"
             },
             "grpcOptions": {
-                "ssl-target-name-override": "peer1.patient.chainhealth.com",
-                "hostnameOverride": "peer1.patient.chainhealth.com"
+                "ssl-target-name-override": "peer1.ministryofhealth.chainhealth.com",
+                "hostnameOverride": "peer1.ministryofhealth.chainhealth.com"
+            }
+        },
+        "peer0.doctor.chainhealth.com": {
+            "caName": "ca.doctor.chainhealth.com",
+            "url": "grpcs://localhost:14051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer0.doctor.chainhealth.com/msp/tlscacerts/tlsca.doctor.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.doctor.chainhealth.com",
+                "hostnameOverride": "peer0.doctor.chainhealth.com"
+            }
+        },
+        "peer1.doctor.chainhealth.com": {
+            "caName": "ca.doctor.chainhealth.com",
+            "url": "grpcs://localhost:15051",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer1.doctor.chainhealth.com/msp/tlscacerts/tlsca.doctor.chainhealth.com-cert.pem"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1.doctor.chainhealth.com",
+                "hostnameOverride": "peer1.doctor.chainhealth.com"
             }
         }
     },
@@ -122,11 +154,21 @@
                 "verify": false
             }
         },
-        "ca.patient.chainhealth.com": {
+        "ca.ministryofhealth.chainhealth.com": {
             "url": "https://localhost:12054",
-            "caName": "ca.patient.chainhealth.com",
+            "caName": "ca.ministryofhealth.chainhealth.com",
             "tlsCACerts": {
-                "path": "../../channel/crypto-config/peerOrganizations/patient.chainhealth.com/ca/ca.patient.chainhealth.com-cert.pem"
+                "path": "../../channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/ca/ca.ministryofhealth.chainhealth.com-cert.pem"
+            },
+            "httpOptions": {
+                "verify": false
+            }
+        },
+        "ca.doctor.chainhealth.com": {
+            "url": "https://localhost:14054",
+            "caName": "ca.doctor.chainhealth.com",
+            "tlsCACerts": {
+                "path": "../../channel/crypto-config/peerOrganizations/doctor.chainhealth.com/ca/ca.doctor.chainhealth.com-cert.pem"
             },
             "httpOptions": {
                 "verify": false

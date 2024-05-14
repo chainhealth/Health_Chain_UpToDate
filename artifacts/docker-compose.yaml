@@ -1,9 +1,3 @@
-# We will have 2 CA for each organization: 2 CA containers
-# We will have 3 containers one for each orderer (Orderer, Orderer2 and Orderer3), 3 containers
-# 4 Couch CB conatainer for each peer (couchdb0, couchdb1, couchdb3, couchdb4), 4 containers
-# We will have a container for each peer (peer0.pharmacy, peer1.pharmacy, peer0.insurance, peer1.insurance), 4 containers
-# Total = 2 + 3 + 4 + 4 = 13 containers
-
 version: "2"
 
 networks:

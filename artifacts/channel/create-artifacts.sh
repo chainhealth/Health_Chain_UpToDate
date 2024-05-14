@@ -75,6 +75,8 @@ echo ""
 
 echo "########## Configtxgen Part Finished ##########"
 
+mkdir inspect-json
+
 ../../bin/configtxgen -inspectBlock ./genesis.block > inspect-json/genesis-block.json
 ../../bin/configtxgen -inspectChannelCreateTx ./chainhealth-channel.tx > inspect-json/channel-creation.json
 echo "######## Inspect Saved ##########"
