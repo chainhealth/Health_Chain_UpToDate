@@ -350,7 +350,7 @@ loginError() {
 
 loginSuccess() {
     setGlobalsForPeer0ministryofhealth
-    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "login","Args":["patient1", "seif12345"]}'
+    ./bin/peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "login","Args":["patient1", "patient12345"]}'
     
     echo "===================== Chaincode loginSuccess Finished ===================== "
 }

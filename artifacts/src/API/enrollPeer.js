@@ -35,7 +35,7 @@ async function enrollPeer() {
       const wallet = new Wallet();
       await wallet.createWallet();
 
-      const username = `peer${peerNumber}${organization}`;
+      const username = `peer${peerNumber}.${organization}.chainhealth.com`;
       // Check if peer identity already exists in the wallet
       const identity = await wallet.getUser(username);
       if (identity) {

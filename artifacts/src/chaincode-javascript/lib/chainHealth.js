@@ -28,12 +28,28 @@ class EHRContract extends Contract {
       for (const patientRecord of patientRecords) {
         const hashedPassword = this._hashPassword(patientRecord.password);
         patientRecord.password = hashedPassword;
-        await ledger.writeRecord(ctx, patientRecord.patientID, patientRecord);
+        await ledger.writeRecord(ctx, patientRecord.id, patientRecord);
       }
 
       // Storing pharmacy data
       for (const pharmRecord of pharmacyRecords) {
-        await ledger.writeRecord(ctx, pharmRecord.pharmacyId, pharmRecord);
+        const hashedPassword = this._hashPassword(pharmRecord.password);
+        pharmRecord.password = hashedPassword;
+        await ledger.writeRecord(ctx, pharmRecord.id, pharmRecord);
+      }
+
+      // storing doctor records
+      for (const doctorRecord of doctorRecords) {
+        const hashedPassword = this._hashPassword(doctorRecord.password);
+        doctorRecord.password = hashedPassword;
+        await ledger.writeRecord(ctx, doctorRecord.id, doctorRecord);
+      }
+
+      // Storing insurance records
+      for (const insuranceRecord of insuranceRecords) {
+        const hashedPassword = this._hashPassword(insuranceRecord.password);
+        insuranceRecord.password = hashedPassword;
+        await ledger.writeRecord(ctx, insuranceRecord.id, insuranceRecord);
       }
 
       // Storing medicine information
@@ -162,7 +178,7 @@ class EHRContract extends Contract {
       };
       patientDataJSON.prescription.push(prescriptionObject);
       patientDataJSON.medicalHistory.medications = prescription;
-      await ledger.writeRecord(ctx, patientDataJSON.patientID, patientDataJSON);
+      await ledger.writeRecord(ctx, patientDataJSON.id, patientDataJSON);
     } catch (error) {
       throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION + error);
     }
@@ -347,11 +363,7 @@ class EHRContract extends Contract {
         this._confirmPrescriptionSalePharmacy(prescription, parsedPharmacyData);
       }
 
-      await ledger.writeRecord(
-        ctx,
-        parsedPatientData.patientID,
-        parsedPatientData
-      );
+      await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
       return "Confirmed the prescription successfully!";
     } catch (error) {
       throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error);
@@ -364,12 +376,49 @@ class EHRContract extends Contract {
     return hash.digest("hex");
   }
 
+  _createPatientPageData(parsedData) {
+    const prescriptionList = [];
+    for (const presc of parsedData.prescription) {
+      prescriptionList.unshift({
+        prescId: presc.prescriptionID,
+        prescState: presc.state,
+      });
+    }
+    return {
+      firstName: parsedData.firstName,
+      lastName: parsedData.lastName,
+      balance: parsedData.balance.remainingBalance,
+      prescription: prescriptionList,
+    };
+  }
+
+  async _createInsurancePageData(ctx) {
+    const allRecords = await this.getAllRecords(ctx);
+    const allRecordsParsed = JSON.parse(allRecords);
+    const userRecords = [];
+
+    for (const patientRecord of allRecordsParsed) {
+      if (patientRecord.id?.includes("patient")) {
+        const tempUser = {
+          firstName: patientRecord.personalInformation.firstName,
+          lastName: patientRecord.personalInformation.lastName,
+          insuranceId: patientRecord.insuranceInformation.policyNumber,
+          insuranceState: patientRecord.insuranceInformation.state,
+          remainingBalance: patientRecord.balance.remainingBalance,
+          claimedBalance: patientRecord.balance.claimedBalance,
+        };
+        userRecords.push(tempUser);
+      }
+    }
+    return userRecords;
+  }
+
   /**
    * Logs in a user with the provided username and password.
    * @param {Context} ctx The transaction context.
    * @param {string} username The username of the user.
    * @param {string} enteredPassword The entered password of the user.
-   * @returns {string} A message indicating the success of the login process.
+   * @returns {string} Home page data depending on user type
    * @throws {Error} If an error occurs during the login process.
    */
   async login(ctx, username, enteredPassword) {
@@ -384,12 +433,29 @@ class EHRContract extends Contract {
       const hashedEnteredPassword = this._hashPassword(enteredPassword);
 
       if (hashedPassword === hashedEnteredPassword) {
-        return "Login success!";
+        // Check user type
+        const MSPID = ledger.getMSPID(ctx);
+
+        if (MSPID === "PharmacyMSP" || MSPID === "DoctorMSP") {
+          return true;
+        }
+        if (MSPID === "MinistryofhealthMSP") {
+          return this._createPatientPageData(patientDataParsed);
+        }
+        if (MSPID === "InsuranceMSP") {
+          const userData = await this._createInsurancePageData(ctx);
+          return {
+            insuranceName: patientDataParsed.insuranceName,
+            userData: userData,
+          };
+        } else {
+          throw new Error("Invalid username or passwrod!");
+        }
       } else {
         throw new Error("Invalid username or passwrod!");
       }
     } catch (error) {
-      throw new Error(ERROR_MESSAGES.LOGIN);
+      throw new Error(ERROR_MESSAGES.LOGIN + error);
     }
   }
 }
@@ -400,8 +466,8 @@ module.exports = EHRContract;
 // Sample patient records for ledger initialization
 const patientRecords = [
   {
-    patientID: "patient1",
-    password: "seif12345",
+    id: "patient1",
+    password: "patient12345",
     personalInformation: {
       firstName: "Seifeldin",
       lastName: "Sami",
@@ -471,8 +537,8 @@ const patientRecords = [
     },
   },
   {
-    patientID: "patient2",
-    password: "Aisha12345",
+    id: "patient2",
+    password: "patient12345",
     personalInformation: {
       firstName: "Aisha",
       lastName: "Khan",
@@ -540,19 +606,46 @@ const patientRecords = [
 
 const pharmacyRecords = [
   {
-    pharmacyId: "pharmacy1",
+    id: "pharmacy1",
     pharmacyName: "El-Ezaby",
     phramacyAddress: "Al-Rehab 2",
+    password: "pharmacy12345",
   },
   {
-    pharmacyId: "pharmacy2",
+    id: "pharmacy2",
     pharmacyName: "El-Tarshouby",
     phramacyAddress: "Nasr City",
+    password: "pharmacy12345",
   },
 ];
 
-const doctorRecords = [];
-const insuranceRecords = [];
+const doctorRecords = [
+  {
+    id: "doctor1",
+    firstName: "Mina",
+    lastName: "Saad",
+    password: "doctor12345",
+  },
+  {
+    id: "doctor2",
+    firstName: "Peter",
+    lastName: "Samy",
+    password: "doctor12345",
+  },
+];
+
+const insuranceRecords = [
+  {
+    id: "insurance1",
+    insuranceName: "AXA",
+    password: "insurance12345",
+  },
+  {
+    id: "insurance2",
+    insuranceName: "ALLIANZ",
+    password: "insurance12345",
+  },
+];
 /* prettier-ignore */
 const medicineList = [
   { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 15 },

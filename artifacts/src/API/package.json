@@ -15,5 +15,8 @@
     "fabric-ca-client": "^2.2.20",
     "fabric-network": "^2.2.20",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }

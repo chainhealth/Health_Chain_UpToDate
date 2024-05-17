@@ -47,6 +47,7 @@
         "peer0.pharmacy.chainhealth.com": {
             "caName": "ca.pharmacy.chainhealth.com",
             "url": "grpcs://localhost:7051",
+            "username": "pharmacy1",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer0.pharmacy.chainhealth.com/msp/tlscacerts/tlsca.pharmacy.chainhealth.com-cert.pem"
             },
@@ -58,6 +59,7 @@
         "peer1.pharmacy.chainhealth.com": {
             "caName": "ca.pharmacy.chainhealth.com",
             "url": "grpcs://localhost:8051",
+            "username": "pharmacy2",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer1.pharmacy.chainhealth.com/msp/tlscacerts/tlsca.pharmacy.chainhealth.com-cert.pem"
             },
@@ -69,6 +71,7 @@
         "peer0.insurance.chainhealth.com": {
             "caName": "ca.insurance.chainhealth.com",
             "url": "grpcs://localhost:9051",
+            "username": "insurance1",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer0.insurance.chainhealth.com/msp/tlscacerts/tlsca.insurance.chainhealth.com-cert.pem"
             },
@@ -80,6 +83,7 @@
         "peer1.insurance.chainhealth.com": {
             "caName": "ca.insurance.chainhealth.com",
             "url": "grpcs://localhost:10051",
+            "username": "insurance2",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer1.insurance.chainhealth.com/msp/tlscacerts/tlsca.insurance.chainhealth.com-cert.pem"
             },
@@ -91,6 +95,7 @@
         "peer0.ministryofhealth.chainhealth.com": {
             "caName": "ca.ministryofhealth.chainhealth.com",
             "url": "grpcs://localhost:12051",
+            "username": "patient1",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer0.ministryofhealth.chainhealth.com/msp/tlscacerts/tlsca.ministryofhealth.chainhealth.com-cert.pem"
             },
@@ -102,6 +107,7 @@
         "peer1.ministryofhealth.chainhealth.com": {
             "caName": "ca.ministryofhealth.chainhealth.com",
             "url": "grpcs://localhost:13051",
+            "username": "patient2",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer1.ministryofhealth.chainhealth.com/msp/tlscacerts/tlsca.ministryofhealth.chainhealth.com-cert.pem"
             },
@@ -113,6 +119,7 @@
         "peer0.doctor.chainhealth.com": {
             "caName": "ca.doctor.chainhealth.com",
             "url": "grpcs://localhost:14051",
+            "username": "doctor1",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer0.doctor.chainhealth.com/msp/tlscacerts/tlsca.doctor.chainhealth.com-cert.pem"
             },
@@ -124,6 +131,7 @@
         "peer1.doctor.chainhealth.com": {
             "caName": "ca.doctor.chainhealth.com",
             "url": "grpcs://localhost:15051",
+            "username": "doctor2",
             "tlsCACerts": {
                 "path": "../../channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer1.doctor.chainhealth.com/msp/tlscacerts/tlsca.doctor.chainhealth.com-cert.pem"
             },
@@ -173,6 +181,32 @@
             "httpOptions": {
                 "verify": false
             }
+        }
+    },
+    "users": {
+        "patient1": {
+            "peer": "peer0.ministryofhealth.chainhealth.com"
+        },
+        "patient2": {
+            "peer": "peer1.ministryofhealth.chainhealth.com"
+        },
+        "pharmacy1": {
+            "peer": "peer0.pharmacy.chainhealth.com"
+        },
+        "pharmacy2": {
+            "peer": "peer1.pharmacy.chainhealth.com"
+        },
+        "insurance1": {
+            "peer": "peer0.insurance.chainhealth.com"
+        },
+        "insurance2": {
+            "peer": "peer1.insurance.chainhealth.com"
+        },
+        "doctor1": {
+            "peer": "peer0.doctor.chainhealth.com"
+        },
+        "doctor2": {
+            "peer": "peer1.doctor.chainhealth.com"
         }
     }
 }
