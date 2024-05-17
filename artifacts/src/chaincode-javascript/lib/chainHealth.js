@@ -75,6 +75,47 @@ class EHRContract extends Contract {
     }
   }
 
+  _calculateAge(birthDateString) {
+    // Parse the birth date string to a Date object
+    const birthDate = new Date(birthDateString);
+    // Get the current date
+    const today = new Date();
+
+    // Calculate the age
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    // Adjust the age if the birth date hasn't occurred yet this year
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  }
+
+  _getPrescriptionIds(prescriptionList) {
+    const ids = [];
+    for (let i = 0; i < prescriptionList.length - 1; i++) {
+      ids.push(prescriptionList[i].prescriptionID);
+    }
+    return ids;
+  }
+
+  _createPrescriptionObjectPharmacy(prescriptions) {
+    const prescArray = [];
+    for (const prescription of prescriptions) {
+      const tempObject = {
+        prescriptionId: prescription.prescriptionID,
+        state: prescription.state,
+      };
+      prescArray.push(tempObject);
+    }
+    return prescArray;
+  }
+
   /**
    * Retrieves patient information based on the provided patient ID.
    * @param {Context} ctx The transaction context.
@@ -96,20 +137,31 @@ class EHRContract extends Contract {
       // Return the desired patient information
       let info;
       switch (clientMSP) {
-        case "DoctorMSP":
         case "PharmacyMSP":
+          const prescription = this._createPrescriptionObjectPharmacy(
+            parsedData.prescription
+          );
+          info = {
+            balance: parsedData.balance.remainingBalance,
+            prescription: prescription,
+          };
+          break;
+        case "DoctorMSP":
+          const age = this._calculateAge(
+            parsedData.personalInformation.dateOfBirth
+          );
+          const prescIds = this._getPrescriptionIds(parsedData.prescription);
           info = {
             firstName: parsedData.personalInformation.firstName,
             lastName: parsedData.personalInformation.lastName,
-            dateOfBirth: parsedData.personalInformation.dateOfBirth,
+            age: age,
             gender: parsedData.personalInformation.gender,
+            chronicDiseases: parsedData.medicalHistory.chronicDiseases,
+            allergies: parsedData.medicalHistory.allergies,
+            surgeries: parsedData.medicalHistory.surgeries,
+            medications: parsedData.medicalHistory.medications,
+            oldPrescription: prescIds,
           };
-          if (clientMSP === "DoctorMSP") {
-            info.medicalHistory = parsedData.medicalHistory;
-            info.prescription = parsedData.prescription;
-          } else {
-            info.prescription = parsedData.prescription;
-          }
           break;
         case "InsuranceMSP":
           info = {
@@ -199,6 +251,7 @@ class EHRContract extends Contract {
         const temp = {
           medicineName: medicine.name,
           description: medicine.description,
+          frequency: medicine.frequency,
         };
         medicineObject.push(temp);
       } else {
@@ -385,8 +438,8 @@ class EHRContract extends Contract {
       });
     }
     return {
-      firstName: parsedData.firstName,
-      lastName: parsedData.lastName,
+      firstName: parsedData.personalInformation.firstName,
+      lastName: parsedData.personalInformation.lastName,
       balance: parsedData.balance.remainingBalance,
       prescription: prescriptionList,
     };
@@ -436,15 +489,27 @@ class EHRContract extends Contract {
         // Check user type
         const MSPID = ledger.getMSPID(ctx);
 
-        if (MSPID === "PharmacyMSP" || MSPID === "DoctorMSP") {
-          return true;
+        if (MSPID === "PharmacyMSP") {
+          return {
+            userType: "Pharmacy",
+          };
+        }
+        if (MSPID === "DoctorMSP") {
+          return {
+            userType: "Doctor",
+          };
         }
         if (MSPID === "MinistryofhealthMSP") {
-          return this._createPatientPageData(patientDataParsed);
+          const pageData = this._createPatientPageData(patientDataParsed);
+          return {
+            pageData: pageData,
+            userType: "MinistryofhealthMSP",
+          };
         }
         if (MSPID === "InsuranceMSP") {
           const userData = await this._createInsurancePageData(ctx);
           return {
+            userType: "Insurance",
             insuranceName: patientDataParsed.insuranceName,
             userData: userData,
           };
@@ -456,6 +521,38 @@ class EHRContract extends Contract {
       }
     } catch (error) {
       throw new Error(ERROR_MESSAGES.LOGIN + error);
+    }
+  }
+
+  /**
+   * Retrieves prescription information for a given user.
+   * @param {object} ctx - The context objec
+   * @param {string} username - The username of the patient for whom to retrieve prescription information.
+   * @param {string} prescriptionId - The unique identifier of the specific prescription to retrieve.
+   * @returns {String} A string that contains the presction information
+   * @throws {Error} If any errors occur during data retrieval or processing.
+   */
+  async getPrescriptionInformation(ctx, username, prescriptionId) {
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) {
+        throw patientData;
+      }
+      const patientDataParsed = JSON.parse(patientData);
+      if (!patientDataParsed.prescription) {
+        throw "Patinet deoes not have any prescription!";
+      }
+
+      const prescInformation = this._getPrescriptionById(
+        patientDataParsed.prescription,
+        prescriptionId
+      );
+      if (prescInformation instanceof Error) {
+        throw prescInformation;
+      }
+      return JSON.stringify(prescInformation);
+    } catch (error) {
+      throw new Error(error);
     }
   }
 }
@@ -502,7 +599,7 @@ const patientRecords = [
     },
     prescription: [
       {
-        prescriptionID: "pres1", // Add prescription ID
+        prescriptionID: "pres1",
         state: "purchased",
         issuingDoctor: "Dr. Smith",
         medicines: [
@@ -648,33 +745,33 @@ const insuranceRecords = [
 ];
 /* prettier-ignore */
 const medicineList = [
-  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 15 },
-  { name: "Ibuprofen", description: "Pain reliever and fever reducer, 200mg tablets", cost: 18 },
-  { name: "Acetaminophen", description: "Pain reliever and fever reducer, 500mg tablets", cost: 12 },
-  { name: "Diphenhydramine", description: "Antihistamine, Sleep aid, 25mg tablets", cost: 10 },
-  { name: "Loratadine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 14 },
-  { name: "Cetirizine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 13 },
-  { name: "Amoxicillin", description: "Antibiotic, 500mg capsules", cost: 35 },
-  { name: "Azithromycin", description: "Antibiotic, 250mg tablets", cost: 40 },
-  { name: "Cephalexin", description: "Antibiotic, 500mg capsules", cost: 32 },
-  { name: "Albuterol", description: "Asthma inhaler", cost: 25 },
-  { name: "Salbutamol", description: "Asthma inhaler", cost: 22 },
-  { name: "Prednisone", description: "Steroid, 5mg tablets", cost: 30 },
-  { name: "Fluticasone", description: "Steroid inhaler", cost: 28 },
-  { name: "Metformin", description: "Diabetes medication, 500mg tablets", cost: 45 },
-  { name: "Glimepiride", description: "Diabetes medication, 2mg tablets", cost: 42 },
-  { name: "Insulin", description: "Diabetes medication (Varies by dose)", cost: 50 },
-  { name: "Atorvastatin", description: "Cholesterol medication, 20mg tablets", cost: 38 },
-  { name: "Simvastatin", description: "Cholesterol medication, 40mg tablets", cost: 40 },
-  { name: "Rosuvastatin", description: "Cholesterol medication, 10mg tablets", cost: 35 },
-  { name: "Lisinopril", description: "Blood pressure medication, 20mg tablets", cost: 28 },
-  { name: "Hydrochlorothiazide", description: "Blood pressure medication, 25mg tablets", cost: 20 },
-  { name: "Losartan", description: "Blood pressure medication, 50mg tablets", cost: 32 },
-  { name: "Escitalopram", description: "Antidepressant, 10mg tablets", cost: 25 },
-  { name: "Sertraline", description: "Antidepressant, 50mg tablets", cost: 30 },
-  { name: "Fluoxetine", description: "Antidepressant, 20mg tablets", cost: 22 },
-  { name: "Citalopram", description: "Antidepressant, 20mg tablets", cost: 28 },
-  { name: "Lexapro", description: "Antidepressant (Escitalopram), 10mg tablets", cost: 25 },
-  { name: "Zoloft", description: "Antidepressant (Sertraline), 50mg tablets", cost: 30 },
-  { name: "Prozac", description: "Antidepressant (Fluoxetine), 20mg tablets", cost: 22 },
+  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 15, frequency: 2 },
+  { name: "Ibuprofen", description: "Pain reliever and fever reducer, 200mg tablets", cost: 18, frequency: 3 },
+  { name: "Acetaminophen", description: "Pain reliever and fever reducer, 500mg tablets", cost: 12, frequency: 4 },
+  { name: "Diphenhydramine", description: "Antihistamine, Sleep aid, 25mg tablets", cost: 10, frequency: 1 },
+  { name: "Loratadine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 14, frequency: 1 },
+  { name: "Cetirizine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 13, frequency: 1 },
+  { name: "Amoxicillin", description: "Antibiotic, 500mg capsules", cost: 35, frequency: 3 },
+  { name: "Azithromycin", description: "Antibiotic, 250mg tablets", cost: 40, frequency: 1 },
+  { name: "Cephalexin", description: "Antibiotic, 500mg capsules", cost: 32, frequency: 4 },
+  { name: "Albuterol", description: "Asthma inhaler", cost: 25, frequency: 2 },
+  { name: "Salbutamol", description: "Asthma inhaler", cost: 22, frequency: 2 },
+  { name: "Prednisone", description: "Steroid, 5mg tablets", cost: 30, frequency: 1 },
+  { name: "Fluticasone", description: "Steroid inhaler", cost: 28, frequency: 2 },
+  { name: "Metformin", description: "Diabetes medication, 500mg tablets", cost: 45, frequency: 2 },
+  { name: "Glimepiride", description: "Diabetes medication, 2mg tablets", cost: 42, frequency: 1 },
+  { name: "Insulin", description: "Diabetes medication (Varies by dose)", cost: 50, frequency: 3 },
+  { name: "Atorvastatin", description: "Cholesterol medication, 20mg tablets", cost: 38, frequency: 1 },
+  { name: "Simvastatin", description: "Cholesterol medication, 40mg tablets", cost: 40, frequency: 1 },
+  { name: "Rosuvastatin", description: "Cholesterol medication, 10mg tablets", cost: 35, frequency: 1 },
+  { name: "Lisinopril", description: "Blood pressure medication, 20mg tablets", cost: 28, frequency: 1 },
+  { name: "Hydrochlorothiazide", description: "Blood pressure medication, 25mg tablets", cost: 20, frequency: 1 },
+  { name: "Losartan", description: "Blood pressure medication, 50mg tablets", cost: 32, frequency: 1 },
+  { name: "Escitalopram", description: "Antidepressant, 10mg tablets", cost: 25, frequency: 1 },
+  { name: "Sertraline", description: "Antidepressant, 50mg tablets", cost: 30, frequency: 1 },
+  { name: "Fluoxetine", description: "Antidepressant, 20mg tablets", cost: 22, frequency: 1 },
+  { name: "Citalopram", description: "Antidepressant, 20mg tablets", cost: 28, frequency: 1 },
+  { name: "Lexapro", description: "Antidepressant (Escitalopram), 10mg tablets", cost: 25, frequency: 1 },
+  { name: "Zoloft", description: "Antidepressant (Sertraline), 50mg tablets", cost: 30, frequency: 1 },
+  { name: "Prozac", description: "Antidepressant (Fluoxetine), 20mg tablets", cost: 22, frequency: 1 },
 ];

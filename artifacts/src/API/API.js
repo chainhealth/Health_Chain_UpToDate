@@ -3,6 +3,8 @@ const express = require("express");
 var bodyParser = require("body-parser");
 const getAllRecords = require("./Routes/getAllRecords");
 const login = require("./Routes/login");
+const getPrescriptionInformation = require("./Routes/prescription");
+const getPatientInformation = require("./Routes/getPatientInfo");
 
 const app = express();
 const PORT = 3000;
@@ -40,6 +42,38 @@ app.get("/login", async (req, res) => {
 
   try {
     const result = await login(username, password);
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+app.get("/prescription", async (req, res) => {
+  const username = req.body.username;
+  const prescriptionId = req.body.prescriptionId;
+
+  if (!username || !prescriptionId) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  try {
+    const result = await getPrescriptionInformation(username, prescriptionId);
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+app.get("/searchPatient", async (req, res) => {
+  const username = req.body.username;
+  const patientId = req.body.patientId;
+
+  if (!username || !patientId) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  try {
+    const result = await getPatientInformation(username, patientId);
     res.status(200).send(result);
   } catch (error) {
     res.status(400).send(error.message);
