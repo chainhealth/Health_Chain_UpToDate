@@ -465,21 +465,21 @@ echo ""
 confirmPrescriptionSalePharmacyError1
 sleep 3
 
-echo ""
-confirmPrescriptionSalePharmacy
-sleep 3
+# echo ""
+# confirmPrescriptionSalePharmacy
+# sleep 3
 
-echo ""
-getPatientRecordMOH
-sleep 3
+# echo ""
+# getPatientRecordMOH
+# sleep 3
 
-echo ""
-confirmPrescriptionSalePatient
-sleep 3
+# echo ""
+# confirmPrescriptionSalePatient
+# sleep 3
 
-echo ""
-getPatientRecordMOH
-sleep 3
+# echo ""
+# getPatientRecordMOH
+# sleep 3
 
 # echo ""
 # addUserPatient

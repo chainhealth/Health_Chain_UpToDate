@@ -172,9 +172,6 @@ class EHRContract extends Contract {
             insuranceInformation: parsedData.insuranceInformation,
           };
           break;
-        case "MinistryofhealthMSP":
-          info = parsedData;
-          break;
         default:
           throw new Error("You don't have access to this record!");
       }
@@ -313,7 +310,7 @@ class EHRContract extends Contract {
         return prescription;
       }
     }
-    throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION);
+    throw new Error("No prescription with the entered id!");
   }
 
   _confirmPrescriptionSalePatient(prescription) {
@@ -399,13 +396,16 @@ class EHRContract extends Contract {
       if (clientMSP !== "PharmacyMSP" && clientMSP !== "MinistryofhealthMSP") {
         throw new Error("Access Denied!");
       } else if (prescription.state === "purchased") {
-        throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION);
+        throw new Error("Prescription is alrady purchased!");
       }
 
       // criteria check
       this._criteriaCheck(parsedPatientData);
 
       if (clientMSP === "MinistryofhealthMSP") {
+        if (prescription.state !== "confirmed1") {
+          throw new Error("Prescription must be confirmed by pharmacy first!");
+        }
         await this._insuranceCheck(
           ctx,
           parsedPatientData,
@@ -419,7 +419,7 @@ class EHRContract extends Contract {
       await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
       return "Confirmed the prescription successfully!";
     } catch (error) {
-      throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error);
+      throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error.message);
     }
   }
 

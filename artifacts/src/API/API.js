@@ -5,6 +5,8 @@ const getAllRecords = require("./Routes/getAllRecords");
 const login = require("./Routes/login");
 const getPrescriptionInformation = require("./Routes/prescription");
 const getPatientInformation = require("./Routes/getPatientInfo");
+const confirmPrescriptionPharmacy = require("./Routes/confirmPrescriptionPharmacy");
+const confirmPrescriptionPatient = require("./Routes/confirmPrescriptionPatient");
 
 const app = express();
 const PORT = 3000;
@@ -63,7 +65,26 @@ app.get("/prescription", async (req, res) => {
     res.status(400).send(error.message);
   }
 });
+app.post("/confirmPrescriptionPharmacy", async (req, res) => {
+  const username = req.body.username;
+  const patientId = req.body.patientId;
+  const presId = req.body.prescriptionId;
 
+  if (!username || !patientId || !presId) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  try {
+    const result = await confirmPrescriptionPharmacy(
+      username,
+      patientId,
+      presId
+    );
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 app.get("/searchPatient", async (req, res) => {
   const username = req.body.username;
   const patientId = req.body.patientId;
@@ -74,6 +95,48 @@ app.get("/searchPatient", async (req, res) => {
 
   try {
     const result = await getPatientInformation(username, patientId);
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+app.post("/confirmPrescriptionPharmacy", async (req, res) => {
+  const username = req.body.username;
+  const patientId = req.body.patientId;
+  const presId = req.body.prescriptionId;
+
+  if (!username || !patientId || !presId) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  try {
+    const result = await confirmPrescriptionPharmacy(
+      username,
+      patientId,
+      presId
+    );
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+app.post("/confirmPrescriptionPatient", async (req, res) => {
+  const username = req.body.username;
+  const pharmacyId = req.body.pharmacyId;
+  const presId = req.body.prescriptionId;
+
+  if (!username || !pharmacyId || !presId) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  try {
+    const result = await confirmPrescriptionPatient(
+      username,
+      pharmacyId,
+      presId
+    );
     res.status(200).send(result);
   } catch (error) {
     res.status(400).send(error.message);
