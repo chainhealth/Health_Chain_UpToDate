@@ -1,2 +1,0 @@
-Installed chaincodes on peer:
-Package ID: chainHeath-ChainCode_1.0:cea95c79b7b8cb8747ebaf4541d0d5fe466e0d60401b8079940ddc113e8e084b, Label: chainHeath-ChainCode_1.0
