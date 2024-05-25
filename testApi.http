@@ -1,0 +1,170 @@
+GET http://localhost:3000/getAllRecords HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "patient1"
+}
+
+######## patient login
+GET http://localhost:3000/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "patient1",
+    "password": "patient12345"
+}
+
+######## Insurance login
+GET http://localhost:3000/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "insurance1",
+    "password": "insurance12345"
+}
+
+####### Doctor login
+GET http://localhost:3000/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "doctor1",
+    "password": "doctor12345"
+}
+
+####### Pharmacy login
+GET http://localhost:3000/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "pharmacy1",
+    "password": "pharmacy12345"
+}
+
+####### Get prescription insurance
+GET http://localhost:3000/prescription HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "insurance1",
+    "patientUsername": "patient1",
+    "prescriptionId": "pres1"
+}
+
+####### Get prescription doctor
+GET http://localhost:3000/prescription HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "doctor1",
+    "patientUsername": "patient1",
+    "prescriptionId": "pres1"
+}
+
+####### Get prescription patient
+GET http://localhost:3000/prescription HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "patient1",
+    "patientUsername": "patient1",
+    "prescriptionId": "pres1"
+}
+
+####### Get prescription pharmacy
+GET http://localhost:3000/prescription HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "pharmacy1",
+    "patientUsername": "patient1",
+    "prescriptionId": "pres1"
+}
+
+####### Get patient doctor
+GET http://localhost:3000/searchPatient HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "doctor1",
+    "patientId": "patient1"
+}
+
+####### Get patient pharmacy
+GET http://localhost:3000/searchPatient HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "pharmacy1",
+    "patientId": "patient1"
+}
+
+####### Get patient insurance
+GET http://localhost:3000/searchPatient HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "insurance1",
+    "patientId": "patient1"
+}
+
+####### Confirm presccription pharmacy error (insurance cannot confirm)
+POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "insurance1",
+    "patientId": "patient1",
+    "prescriptionId": "pres1"
+}
+
+####### Confirm presccription pharmacy error (pres already purchased)
+POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "pharmacy1",
+    "patientId": "patient1",
+    "prescriptionId": "pres1"
+}
+
+####### Confirm presccription pharmacy success
+POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "pharmacy1",
+    "patientId": "patient1",
+    "prescriptionId": "pres3"
+}
+
+####### Confirm presccription patient error (username is not a patient)
+POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "pharmacy1",
+    "prescriptionId": "pres3"
+}
+
+####### Confirm presccription patient error (pres already purchased)
+POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "patient1",
+    "pharmacyId": "patient1",
+    "prescriptionId": "pres1"
+}
+
+####### Confirm presccription patient success
+POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "patient1",
+    "pharmacyId": "pharmacy1",
+    "prescriptionId": "pres3"
+}
+
+

@@ -52,6 +52,7 @@ app.get("/login", async (req, res) => {
 
 app.get("/prescription", async (req, res) => {
   const username = req.body.username;
+  const patientUsername = req.body.patientUsername;
   const prescriptionId = req.body.prescriptionId;
 
   if (!username || !prescriptionId) {
@@ -59,32 +60,17 @@ app.get("/prescription", async (req, res) => {
   }
 
   try {
-    const result = await getPrescriptionInformation(username, prescriptionId);
-    res.status(200).send(result);
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
-});
-app.post("/confirmPrescriptionPharmacy", async (req, res) => {
-  const username = req.body.username;
-  const patientId = req.body.patientId;
-  const presId = req.body.prescriptionId;
-
-  if (!username || !patientId || !presId) {
-    return res.status(400).send("Missing required parameter(s)");
-  }
-
-  try {
-    const result = await confirmPrescriptionPharmacy(
+    const result = await getPrescriptionInformation(
       username,
-      patientId,
-      presId
+      patientUsername,
+      prescriptionId
     );
     res.status(200).send(result);
   } catch (error) {
     res.status(400).send(error.message);
   }
 });
+
 app.get("/searchPatient", async (req, res) => {
   const username = req.body.username;
   const patientId = req.body.patientId;
@@ -124,19 +110,14 @@ app.post("/confirmPrescriptionPharmacy", async (req, res) => {
 
 app.post("/confirmPrescriptionPatient", async (req, res) => {
   const username = req.body.username;
-  const pharmacyId = req.body.pharmacyId;
   const presId = req.body.prescriptionId;
 
-  if (!username || !pharmacyId || !presId) {
+  if (!username || !presId) {
     return res.status(400).send("Missing required parameter(s)");
   }
 
   try {
-    const result = await confirmPrescriptionPatient(
-      username,
-      pharmacyId,
-      presId
-    );
+    const result = await confirmPrescriptionPatient(username, presId);
     res.status(200).send(result);
   } catch (error) {
     res.status(400).send(error.message);

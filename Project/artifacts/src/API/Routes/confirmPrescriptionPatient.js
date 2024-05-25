@@ -1,14 +1,13 @@
 const connectToNetwork = require("../Helpers/connectToNetwork");
 const getUserPeer = require("../Helpers/userPeer");
 
-async function confirmPrescriptionPatient(username, pharmacyId, presId) {
+async function confirmPrescriptionPatient(username, presId) {
   try {
     const identity = getUserPeer(username);
     const contract = await connectToNetwork(identity);
     const result = await contract.submitTransaction(
-      "confirmPrescriptionSale",
+      "confirmPrescriptionSalePatient",
       username,
-      pharmacyId,
       presId
     );
     return result;

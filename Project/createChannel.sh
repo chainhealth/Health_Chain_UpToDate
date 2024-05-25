@@ -143,8 +143,8 @@ sleep 3
 
 createChannel
 
-echo "########## Sleeping for 5 seconds ##########"
-sleep 5
+echo "########## Sleeping for 10 seconds ##########"
+sleep 10
 
 joinChannel
 

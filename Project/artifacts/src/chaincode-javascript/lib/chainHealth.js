@@ -313,7 +313,7 @@ class EHRContract extends Contract {
     throw new Error("No prescription with the entered id!");
   }
 
-  _confirmPrescriptionSalePatient(prescription) {
+  _writeConfirmDataPatient(prescription) {
     prescription.state = "purchased";
   }
 
@@ -353,31 +353,27 @@ class EHRContract extends Contract {
     }
   }
 
-  _confirmPrescriptionSalePharmacy(prescription, parsedPharmacyData) {
+  _writeConfirmDataPharmacy(prescription, parsedPharmacyData) {
     prescription.state = "confirmed1";
     prescription.pharmacyName = parsedPharmacyData.pharmacyName;
     prescription.phramacyAddress = parsedPharmacyData.phramacyAddress;
   }
 
-  /**
-   * Confirms the sale of a prescription.
-   * @param {Context} ctx The transaction context.
-   * @param {string} patientId The ID of the patient.
-   * @param {string} pharmacyId The ID of the pharmacy.
-   * @param {string} presId The ID of the prescription.
-   * @returns {string} A message indicating the success of prescription sale confirmation.
-   * @throws {Error} If an error occurs while confirming the prescription sale.
-   */
-  async confirmPrescriptionSale(ctx, patientId, pharmacyId, presId) {
+  async confirmPrescriptionSalePharmacy(ctx, pharmacyId, patientId, presId) {
     try {
-      const patientData = await ledger.queryRecord(ctx, patientId);
-      if (patientData instanceof Error) {
-        throw patientData;
+      const clientMSP = ledger.getMSPID(ctx);
+      if (clientMSP !== "PharmacyMSP") {
+        throw new Error("Access Denied!");
       }
 
       const pharmacyData = await ledger.queryRecord(ctx, pharmacyId);
       if (pharmacyData instanceof Error) {
         throw pharmacyData;
+      }
+
+      const patientData = await ledger.queryRecord(ctx, patientId);
+      if (patientData instanceof Error) {
+        throw patientData;
       }
 
       //Parse Data
@@ -392,29 +388,58 @@ class EHRContract extends Contract {
         throw prescription;
       }
 
-      const clientMSP = ledger.getMSPID(ctx);
-      if (clientMSP !== "PharmacyMSP" && clientMSP !== "MinistryofhealthMSP") {
-        throw new Error("Access Denied!");
-      } else if (prescription.state === "purchased") {
+      if (prescription.state === "purchased") {
         throw new Error("Prescription is alrady purchased!");
       }
 
       // criteria check
       this._criteriaCheck(parsedPatientData);
 
-      if (clientMSP === "MinistryofhealthMSP") {
-        if (prescription.state !== "confirmed1") {
-          throw new Error("Prescription must be confirmed by pharmacy first!");
-        }
-        await this._insuranceCheck(
-          ctx,
-          parsedPatientData,
-          prescription.medicines
-        );
-        this._confirmPrescriptionSalePatient(prescription);
-      } else if (clientMSP === "PharmacyMSP") {
-        this._confirmPrescriptionSalePharmacy(prescription, parsedPharmacyData);
+      this._writeConfirmDataPharmacy(prescription, parsedPharmacyData);
+
+      await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
+      return "Confirmed the prescription successfully!";
+    } catch (error) {
+      throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error.message);
+    }
+  }
+
+  async confirmPrescriptionSalePatient(ctx, patientId, presId) {
+    try {
+      const clientMSP = ledger.getMSPID(ctx);
+      if (clientMSP !== "MinistryofhealthMSP") {
+        throw new Error("Access Denied!");
       }
+
+      const patientData = await ledger.queryRecord(ctx, patientId);
+      if (patientData instanceof Error) {
+        throw patientData;
+      }
+
+      //Parse Data
+      const parsedPatientData = JSON.parse(patientData);
+
+      const prescription = this._getPrescriptionById(
+        parsedPatientData.prescription,
+        presId
+      );
+      if (prescription instanceof Error) {
+        throw prescription;
+      }
+
+      if (prescription.state === "purchased") {
+        throw new Error("Prescription is alrady purchased!");
+      }
+
+      if (prescription.state !== "confirmed1") {
+        throw new Error("Prescription must be confirmed by pharmacy first!");
+      }
+      await this._insuranceCheck(
+        ctx,
+        parsedPatientData,
+        prescription.medicines
+      );
+      this._writeConfirmDataPatient(prescription);
 
       await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
       return "Confirmed the prescription successfully!";

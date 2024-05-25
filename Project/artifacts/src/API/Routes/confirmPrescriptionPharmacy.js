@@ -6,9 +6,9 @@ async function confirmPrescriptionPharmacy(username, patientId, presId) {
     const identity = getUserPeer(username);
     const contract = await connectToNetwork(identity);
     const result = await contract.submitTransaction(
-      "confirmPrescriptionSale",
-      patientId,
+      "confirmPrescriptionSalePharmacy",
       username,
+      patientId,
       presId
     );
     return result;
