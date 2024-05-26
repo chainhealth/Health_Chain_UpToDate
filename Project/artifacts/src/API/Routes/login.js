@@ -10,10 +10,20 @@ async function login(username, password) {
       username,
       password
     );
-    return result;
+
+    // Parse and return the result if successful
+    return JSON.parse(result.toString());
   } catch (error) {
-    throw new Error(`Error during login: Invalid username or password!`);
+    // Handle specific error cases if needed
+    if (error.message.includes('Identity not found')) {
+      throw new Error(`Error during login: Identity not found for ${username}`);
+    } else if (error.message.includes('Error connecting to network')) {
+      throw new Error(`Error during login: Unable to connect to network`);
+    } else {
+      throw new Error(`Error during login: ${error.message}`);
+    }
   }
 }
+
 
 module.exports = login;
