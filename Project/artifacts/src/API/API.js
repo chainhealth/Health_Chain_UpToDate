@@ -34,7 +34,25 @@ app.get("/getAllRecords", async (req, res) => {
 // Return home page data for user and insurace
 // Return true for pharmacy and doctor
 // Return status 200 if successful, 400 if not
-app.get("/login", async (req, res) => {
+// app.get("/login", async (req, res) => {
+//   const username = req.body.username;
+//   const password = req.body.password;
+
+//   if (!username || !password) {
+//     return res.status(400).send("Missing required parameter(s)");
+//   }
+
+//   try {
+//     const result = await login(username, password);
+//     res.status(200).send(result);
+//   } catch (error) {
+//     res.status(400).send(error.message);
+//   }
+// });
+
+
+
+app.post('/login', async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
 
@@ -49,6 +67,10 @@ app.get("/login", async (req, res) => {
     res.status(400).send(error.message);
   }
 });
+
+
+
+
 
 app.get("/prescription", async (req, res) => {
   const username = req.body.username;
