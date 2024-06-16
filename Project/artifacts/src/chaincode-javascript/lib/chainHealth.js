@@ -223,7 +223,8 @@ class EHRContract extends Contract {
         prescriptionID: prescriptionId,
         state: "issued",
         issuingDoctor: issuingDoctor,
-        medicines: prescription,
+        medicines: prescription.medicine,
+        report: prescription.report,
       };
       patientDataJSON.prescription.push(prescriptionObject);
       patientDataJSON.medicalHistory.medications = prescription;
@@ -234,35 +235,39 @@ class EHRContract extends Contract {
   }
 
   async _createPrescriptionObject(ctx, prescription) {
-    const medicineNames = prescription.split(",");
-    const medicineObject = [];
+    const enteredMedicines = prescription.medicine;
+    const medicineArray = [];
 
     const medList = await ledger.queryRecord(ctx, "Medicines");
     const medListParsed = JSON.parse(medList);
 
-    for (const medicineName of medicineNames) {
-      const medicine = medListParsed.find(
-        (medicine) => medicine.name === medicineName
+    for (const med of enteredMedicines) {
+      const foundMedicine = medListParsed.find(
+        (medicine) => medicine.name === med.name
       );
-      if (medicine) {
+      if (foundMedicine) {
         const temp = {
-          medicineName: medicine.name,
-          description: medicine.description,
-          frequency: medicine.frequency,
+          medicineName: foundMedicine.name,
+          description: foundMedicine.description,
+          frequency: med.frequency,
+          dosage: med.dosage,
         };
-        medicineObject.push(temp);
+        medicineArray.push(temp);
       } else {
-        throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION);
+        throw new Error("Medicine does not exist!");
       }
     }
-    return medicineObject;
+    return {
+      report: prescription.report,
+      medicine: medicineArray,
+    };
   }
 
   /**
    * Writes a prescription for a patient.
    * @param {Context} ctx The transaction context.
    * @param {string} patientId The ID of the patient.
-   * @param {string} issuingDoctor The doctor issuing the prescription.
+   * @param {string} issuingDoctor The doctor id who is issuing the prescription.
    * @param {string} prescription The prescription details.
    * @returns {string} A message indicating the success of prescription writing.
    * @throws {Error} If an error occurs while writing the prescription.
@@ -283,13 +288,15 @@ class EHRContract extends Contract {
 
       // Parse Patient Data
       const parsedData = JSON.parse(patientData);
+      const parsedPrescription = JSON.parse(prescription);
 
       const prescriptionData = await this._createPrescriptionObject(
         ctx,
-        prescription
+        parsedPrescription
       );
-      if (prescription instanceof Error) {
-        throw prescription;
+
+      if (prescriptionData instanceof Error) {
+        throw prescriptionData;
       }
 
       await this._updatePrescription(
@@ -300,7 +307,7 @@ class EHRContract extends Contract {
       );
       return "Updated the prescription seccessfully!";
     } catch (error) {
-      throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION);
+      throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION + error.message);
     }
   }
 

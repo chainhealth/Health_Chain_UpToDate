@@ -7,6 +7,7 @@ const getPrescriptionInformation = require("./Routes/prescription");
 const getPatientInformation = require("./Routes/getPatientInfo");
 const confirmPrescriptionPharmacy = require("./Routes/confirmPrescriptionPharmacy");
 const confirmPrescriptionPatient = require("./Routes/confirmPrescriptionPatient");
+const writePrescription = require("./Routes/writePrescription");
 
 const app = express();
 const PORT = 3000;
@@ -118,6 +119,27 @@ app.post("/confirmPrescriptionPatient", async (req, res) => {
 
   try {
     const result = await confirmPrescriptionPatient(username, presId);
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+app.post("/writePrescription", async (req, res) => {
+  const username = req.body.username;
+  const patientId = req.body.patientId;
+  const prescription = req.body.prescription;
+
+  if (!username || !patientId || !prescription) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  try {
+    const result = await writePrescription(
+      username,
+      patientId,
+      JSON.stringify(prescription)
+    );
     res.status(200).send(result);
   } catch (error) {
     res.status(400).send(error.message);

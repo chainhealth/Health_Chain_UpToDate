@@ -167,4 +167,73 @@ Content-Type: application/json
     "prescriptionId": "pres3"
 }
 
+####### Write prescription error (Not a doctor)
+POST http://localhost:3000/writePrescription HTTP/1.1
+Content-Type: application/json
 
+{
+    "username": "pharmacy1",
+    "patientId": "patient1",
+    "prescription": {
+        "report": "The patient has severe flu",
+        "medicine": [
+            {"name": "Aspirin", "dosage": 2, "frequency": 2},
+            {"name": "Ibuprofen", "dosage": 2, "frequency": 2},
+            {"name": "Acetaminophen", "dosage": 2, "frequency": 2}
+        ]
+    }
+}
+
+
+###### Write prescription error (Patient does not exist)
+POST http://localhost:3000/writePrescription HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "doctor1",
+    "patientId": "patient10",
+    "prescription": {
+        "report": "The patient has severe flu",
+        "medicine": [
+            {"name": "Aspirin", "dosage": 2, "frequency": 2},
+            {"name": "Ibuprofen", "dosage": 2, "frequency": 2},
+            {"name": "Acetaminophen", "dosage": 2, "frequency": 2}
+        ]
+    }
+}
+
+
+###### Write prescription error (Medicine not stored in the list)
+POST http://localhost:3000/writePrescription HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "doctor1",
+    "patientId": "patient1",
+    "prescription": {
+        "report": "The patient has severe flu",
+        "medicine": [
+            {"name": "Aspirin", "dosage": 2, "frequency": 2},
+            {"name": "Ibuprofen", "dosage": 2, "frequency": 2},
+            {"name": "something", "dosage": 2, "frequency": 2}
+        ]
+    }
+}
+
+
+##### Write prescrition successfully
+POST http://localhost:3000/writePrescription HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "doctor1",
+    "patientId": "patient1",
+    "prescription": {
+        "report": "The patient has severe flu",
+        "medicine": [
+            {"name": "Aspirin", "dosage": 2, "frequency": 2},
+            {"name": "Ibuprofen", "dosage": 2, "frequency": 2},
+            {"name": "Acetaminophen", "dosage": 2, "frequency": 2}
+        ]
+    }
+}
