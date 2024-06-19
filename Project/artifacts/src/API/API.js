@@ -1,7 +1,11 @@
-var morgan = require("morgan");
 const express = require("express");
 const cors = require("cors");
-var bodyParser = require("body-parser");
+const bodyParser = require("body-parser");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
 const getAllRecords = require("./Routes/getAllRecords");
 const login = require("./Routes/login");
 const getPrescriptionInformation = require("./Routes/prescription");
@@ -11,96 +15,61 @@ const confirmPrescriptionPatient = require("./Routes/confirmPrescriptionPatient"
 
 const app = express();
 const PORT = 3000;
+const SECRET_KEY = "your_secret_key"; // Use a secure key and store it safely
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(morgan("tiny"));
-app.use(cors());
-
-// TODO: remove
-app.get("/getAllRecords", async (req, res) => {
-  const identity = req.body.username;
-
-  if (!identity) {
-    return res.status(400).send("Missing required parameter(s)");
+app.use(cors({ origin: 'http://localhost:4200', credentials: true }));
+app.use(cookieParser());
+app.use(session({
+  secret: SECRET_KEY,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    sameSite: 'lax', // 'strict' or 'none' if using cross-site requests
   }
+}));
 
-  try {
-    const result = await getAllRecords(identity);
-    res.status(200).send(result);
-  } catch (error) {
-    res.status(400).send(error.message);
+// Middleware to verify JWT
+const authenticateJWT = (req, res, next) => {
+  const token = req.cookies.auth_token;
+
+  if (token) {
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.sendStatus(401);
   }
-});
-
-// Return home page data for user and insurace
-// Return true for pharmacy and doctor
-// Return status 200 if successful, 400 if not
-// app.get("/login", async (req, res) => {
-//   const username = req.body.username;
-//   const password = req.body.password;
-
-//   if (!username || !password) {
-//     return res.status(400).send("Missing required parameter(s)");
-//   }
-
-//   try {
-//     const result = await login(username, password);
-//     res.status(200).send(result);
-//     console.log(result);
-//   } catch (error) {
-//     res.status(400).send(error.message);
-//   }
-// });
+};
 
 app.post("/login", async (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
+  const { username, password } = req.body;
 
   if (!username || !password) {
     return res.status(400).send("Missing required parameter(s)");
   }
+
   try {
-    const result = await login(username, password);
-    res.status(200).send(result);
+    const result = await login(username, password); // Assume this function validates the user and returns user data
     console.log(result);
+
+    if (result ) {
+      const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
+      res.cookie('auth_token', token, { httpOnly: true, sameSite: 'lax' });
+      res.status(200).send(result);
+    } else {
+      res.status(400).send("Invalid credentials");
+    }
   } catch (error) {
     res.status(400).send(error.message);
   }
-  // try {
-    
-  //   if (username === 'admin' && password === 'password') {
-  //     res.status(200).json({ success: true, role: 'admin' });
-  //   } else {
-  //     res.status(401).json({ success: false, message: 'Invalid credentials' });
-  //   }
-  // } catch (error) {
-  //   res.status(500).send(error.message);
-  // }
-
-
 });
-
-
-// app.post('/login', async (req, res) => {
-//   const username = req.body.username;
-//   const password = req.body.password;
-
-//   if (!username || !password) {
-//     return res.status(400).send("Missing required parameter(s)");
-//   }
-
-//   try {
-//     const result = await login(username, password);
-//     res.status(200).send(result);
-//   } catch (error) {
-//     res.status(400).send(error.message);
-//   }
-// });
-
-
-
-
 
 app.get("/prescription", async (req, res) => {
   const username = req.body.username;
