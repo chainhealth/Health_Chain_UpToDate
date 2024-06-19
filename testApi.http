@@ -6,7 +6,7 @@ Content-Type: application/json
 }
 
 ######## patient login
-GET http://localhost:3000/login HTTP/1.1
+POST http://localhost:3000/login HTTP/1.1
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ Content-Type: application/json
 }
 
 ######## Insurance login
-GET http://localhost:3000/login HTTP/1.1
+POST http://localhost:3000/login HTTP/1.1
 Content-Type: application/json
 
 {
@@ -24,7 +24,7 @@ Content-Type: application/json
 }
 
 ####### Doctor login
-GET http://localhost:3000/login HTTP/1.1
+POST http://localhost:3000/login HTTP/1.1
 Content-Type: application/json
 
 {
@@ -33,7 +33,7 @@ Content-Type: application/json
 }
 
 ####### Pharmacy login
-GET http://localhost:3000/login HTTP/1.1
+POST http://localhost:3000/login HTTP/1.1
 Content-Type: application/json
 
 {
@@ -41,8 +41,46 @@ Content-Type: application/json
     "password": "pharmacy12345"
 }
 
+###### Get homepage patient
+get http://localhost:3000/homePage HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE4ODE0ODYyLCJleHAiOjE3MTg4MTQ4OTJ9.FXqisUn-E_3RIdngGg3__dchaRUp3YSXLXr0AzJUZ50
+Content-Type: application/json
+
+{
+    "username": "patient1"
+}
+
+###### Get homepage insurance
+get http://localhost:3000/homePage HTTP/1.1
+Authorization: Bearer
+Content-Type: application/json
+
+{
+    "username": "insurance1"
+}
+
+###### Get homepage doctor
+get http://localhost:3000/homePage HTTP/1.1
+Authorization: Bearer
+Content-Type: application/json
+
+{
+    "username": "doctor1"
+}
+
+###### Get homepage pharmacy
+get http://localhost:3000/homePage HTTP/1.1
+Authorization: Bearer
+Content-Type: application/json
+
+{
+    "username": "pharmacy1"
+}
+
+
 ####### Get prescription insurance
 GET http://localhost:3000/prescription HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -53,6 +91,7 @@ Content-Type: application/json
 
 ####### Get prescription doctor
 GET http://localhost:3000/prescription HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -63,6 +102,7 @@ Content-Type: application/json
 
 ####### Get prescription patient
 GET http://localhost:3000/prescription HTTP/1.1
+Authorization: Bearer 
 Content-Type: application/json
 
 {

@@ -498,6 +498,47 @@ class EHRContract extends Contract {
     return userRecords;
   }
 
+  async getHomePage(ctx, username) {
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) {
+        throw patientData;
+      }
+
+      const patientDataParsed = JSON.parse(patientData);
+      const MSPID = ledger.getMSPID(ctx);
+      if (MSPID === "PharmacyMSP") {
+        return {
+          userType: "Pharmacy",
+        };
+      }
+      if (MSPID === "DoctorMSP") {
+        return {
+          userType: "Doctor",
+        };
+      }
+      if (MSPID === "MinistryofhealthMSP") {
+        const pageData = this._createPatientPageData(patientDataParsed);
+        return {
+          pageData: pageData,
+          userType: "MinistryofhealthMSP",
+        };
+      }
+      if (MSPID === "InsuranceMSP") {
+        const userData = await this._createInsurancePageData(ctx);
+        return {
+          userType: "Insurance",
+          insuranceName: patientDataParsed.insuranceName,
+          userData: userData,
+        };
+      } else {
+        throw new Error("Wrong username or password!");
+      }
+    } catch (error) {
+      throw new Error(ERROR_MESSAGES.LOGIN + error);
+    }
+  }
+
   /**
    * Logs in a user with the provided username and password.
    * @param {Context} ctx The transaction context.
@@ -518,36 +559,7 @@ class EHRContract extends Contract {
       const hashedEnteredPassword = this._hashPassword(enteredPassword);
 
       if (hashedPassword === hashedEnteredPassword) {
-        // Check user type
-        const MSPID = ledger.getMSPID(ctx);
-
-        if (MSPID === "PharmacyMSP") {
-          return {
-            userType: "Pharmacy",
-          };
-        }
-        if (MSPID === "DoctorMSP") {
-          return {
-            userType: "Doctor",
-          };
-        }
-        if (MSPID === "MinistryofhealthMSP") {
-          const pageData = this._createPatientPageData(patientDataParsed);
-          return {
-            pageData: pageData,
-            userType: "MinistryofhealthMSP",
-          };
-        }
-        if (MSPID === "InsuranceMSP") {
-          const userData = await this._createInsurancePageData(ctx);
-          return {
-            userType: "Insurance",
-            insuranceName: patientDataParsed.insuranceName,
-            userData: userData,
-          };
-        } else {
-          throw new Error("Invalid username or passwrod!");
-        }
+        return true;
       } else {
         throw new Error("Invalid username or passwrod!");
       }
