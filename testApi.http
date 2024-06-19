@@ -113,6 +113,7 @@ Content-Type: application/json
 
 ####### Get prescription pharmacy
 GET http://localhost:3000/prescription HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -123,6 +124,7 @@ Content-Type: application/json
 
 ####### Get patient doctor
 GET http://localhost:3000/searchPatient HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -132,6 +134,7 @@ Content-Type: application/json
 
 ####### Get patient pharmacy
 GET http://localhost:3000/searchPatient HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -141,6 +144,7 @@ Content-Type: application/json
 
 ####### Get patient insurance
 GET http://localhost:3000/searchPatient HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -150,6 +154,7 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy error (insurance cannot confirm)
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -160,6 +165,7 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy error (pres already purchased)
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -170,6 +176,7 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy success
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -180,6 +187,7 @@ Content-Type: application/json
 
 ####### Confirm presccription patient error (username is not a patient)
 POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -189,6 +197,7 @@ Content-Type: application/json
 
 ####### Confirm presccription patient error (pres already purchased)
 POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -199,6 +208,7 @@ Content-Type: application/json
 
 ####### Confirm presccription patient success
 POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -209,6 +219,7 @@ Content-Type: application/json
 
 ####### Write prescription error (Not a doctor)
 POST http://localhost:3000/writePrescription HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -227,6 +238,7 @@ Content-Type: application/json
 
 ###### Write prescription error (Patient does not exist)
 POST http://localhost:3000/writePrescription HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -245,6 +257,7 @@ Content-Type: application/json
 
 ###### Write prescription error (Medicine not stored in the list)
 POST http://localhost:3000/writePrescription HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
@@ -263,6 +276,7 @@ Content-Type: application/json
 
 ##### Write prescrition successfully
 POST http://localhost:3000/writePrescription HTTP/1.1
+Authorization: Bearer
 Content-Type: application/json
 
 {
