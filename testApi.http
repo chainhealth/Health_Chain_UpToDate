@@ -1,10 +1,3 @@
-GET http://localhost:3000/getAllRecords HTTP/1.1
-Content-Type: application/json
-
-{
-    "username": "patient1"
-}
-
 ######## patient login
 POST http://localhost:3000/login HTTP/1.1
 Content-Type: application/json
@@ -43,40 +36,23 @@ Content-Type: application/json
 
 ###### Get homepage patient
 get http://localhost:3000/homePage HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE4ODE0ODYyLCJleHAiOjE3MTg4MTQ4OTJ9.FXqisUn-E_3RIdngGg3__dchaRUp3YSXLXr0AzJUZ50
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5MTgwMzM1LCJleHAiOjE3MTkxODAzOTV9.b-rVy169gNxyBlWSSSpFtOxoUmytXiHhFrltQn-WuBE
 Content-Type: application/json
-
-{
-    "username": "patient1"
-}
 
 ###### Get homepage insurance
 get http://localhost:3000/homePage HTTP/1.1
 Authorization: Bearer
 Content-Type: application/json
 
-{
-    "username": "insurance1"
-}
-
 ###### Get homepage doctor
 get http://localhost:3000/homePage HTTP/1.1
 Authorization: Bearer
 Content-Type: application/json
 
-{
-    "username": "doctor1"
-}
-
 ###### Get homepage pharmacy
 get http://localhost:3000/homePage HTTP/1.1
 Authorization: Bearer
 Content-Type: application/json
-
-{
-    "username": "pharmacy1"
-}
-
 
 ####### Get prescription insurance
 GET http://localhost:3000/prescription HTTP/1.1
@@ -84,7 +60,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "insurance1",
     "patientUsername": "patient1",
     "prescriptionId": "pres1"
 }
@@ -95,19 +70,16 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "doctor1",
     "patientUsername": "patient1",
     "prescriptionId": "pres1"
 }
 
 ####### Get prescription patient
 GET http://localhost:3000/prescription HTTP/1.1
-Authorization: Bearer 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5MTgwODY0LCJleHAiOjE3MTkxODA5MjR9.VYmfyVaKlwui6t097VnBHHROEHzdLeBmPhat8SeTiRY
 Content-Type: application/json
 
 {
-    "username": "patient1",
-    "patientUsername": "patient1",
     "prescriptionId": "pres1"
 }
 
@@ -117,7 +89,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "pharmacy1",
     "patientUsername": "patient1",
     "prescriptionId": "pres1"
 }
@@ -128,7 +99,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "doctor1",
     "patientId": "patient1"
 }
 
@@ -138,7 +108,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "pharmacy1",
     "patientId": "patient1"
 }
 
@@ -148,7 +117,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "insurance1",
     "patientId": "patient1"
 }
 
@@ -158,7 +126,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "insurance1",
     "patientId": "patient1",
     "prescriptionId": "pres1"
 }
@@ -169,7 +136,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "pharmacy1",
     "patientId": "patient1",
     "prescriptionId": "pres1"
 }
@@ -180,7 +146,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "pharmacy1",
     "patientId": "patient1",
     "prescriptionId": "pres3"
 }
@@ -191,7 +156,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "pharmacy1",
     "prescriptionId": "pres3"
 }
 
@@ -201,7 +165,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "patient1",
     "pharmacyId": "patient1",
     "prescriptionId": "pres1"
 }
@@ -212,7 +175,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "patient1",
     "pharmacyId": "pharmacy1",
     "prescriptionId": "pres3"
 }
@@ -223,7 +185,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "pharmacy1",
     "patientId": "patient1",
     "prescription": {
         "report": "The patient has severe flu",
@@ -242,7 +203,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "doctor1",
     "patientId": "patient10",
     "prescription": {
         "report": "The patient has severe flu",
@@ -261,7 +221,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "doctor1",
     "patientId": "patient1",
     "prescription": {
         "report": "The patient has severe flu",
@@ -280,7 +239,6 @@ Authorization: Bearer
 Content-Type: application/json
 
 {
-    "username": "doctor1",
     "patientId": "patient1",
     "prescription": {
         "report": "The patient has severe flu",

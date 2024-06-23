@@ -4,7 +4,6 @@ var morgan = require("morgan");
 const express = require("express");
 var bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
-const getAllRecords = require("./Routes/getAllRecords");
 const login = require("./Routes/login");
 const getHomePage = require("./Routes/homePage");
 const getPrescriptionInformation = require("./Routes/prescription");
@@ -12,6 +11,7 @@ const getPatientInformation = require("./Routes/getPatientInfo");
 const confirmPrescriptionPharmacy = require("./Routes/confirmPrescriptionPharmacy");
 const confirmPrescriptionPatient = require("./Routes/confirmPrescriptionPatient");
 const writePrescription = require("./Routes/writePrescription");
+const e = require("express");
 
 const app = express();
 const PORT = 3000;
@@ -20,6 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("tiny"));
 
+// Authenticate the token (Valid or not valid)
 function authenticateToken(req) {
   var authenticationResult = false;
   const authHeader = req.headers["authorization"];
@@ -32,25 +33,10 @@ function authenticateToken(req) {
   return authenticationResult;
 }
 
+// Generate Token
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30m" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
 }
-
-// TODO: remove
-app.get("/getAllRecords", async (req, res) => {
-  const identity = req.body.username;
-
-  if (!identity) {
-    return res.status(400).send("Missing required parameter(s)");
-  }
-
-  try {
-    const result = await getAllRecords(identity);
-    res.status(200).send(result);
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
-});
 
 // Return home page data for user and insurace
 // Return true for pharmacy and doctor
@@ -73,16 +59,11 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/homePage", async (req, res) => {
-  const username = req.body.username;
-
-  if (!username) {
-    return res.status(400).send("Missing required parameter(s)");
-  }
-
   const authenticationResults = authenticateToken(req);
   if (authenticationResults === false) res.status(401).send("Invalid Token!");
   else {
     try {
+      const username = authenticationResults.username;
       const homePage = await getHomePage(username);
       res.status(200).send(homePage);
     } catch (error) {
@@ -92,17 +73,25 @@ app.get("/homePage", async (req, res) => {
 });
 
 app.get("/prescription", async (req, res) => {
-  const username = req.body.username;
-  const patientUsername = req.body.patientUsername;
   const prescriptionId = req.body.prescriptionId;
 
-  if (!username || !prescriptionId) {
+  if (!prescriptionId) {
     return res.status(400).send("Missing required parameter(s)");
   }
 
   const authenticationResults = authenticateToken(req);
   if (authenticationResults === false) res.status(401).send("Invalid Token!");
   else {
+    const username = authenticationResults.username;
+    let patientUsername = null;
+    if (username.includes("patient")) {
+      patientUsername = username;
+    } else {
+      patientUsername = req.body.patientUsername;
+      if (!patientUsername) {
+        return res.status(400).send("Missing required parameter(s)");
+      }
+    }
     try {
       const result = await getPrescriptionInformation(
         username,
@@ -117,16 +106,16 @@ app.get("/prescription", async (req, res) => {
 });
 
 app.get("/searchPatient", async (req, res) => {
-  const username = req.body.username;
   const patientId = req.body.patientId;
 
-  if (!username || !patientId) {
+  if (!patientId) {
     return res.status(400).send("Missing required parameter(s)");
   }
 
   const authenticationResults = authenticateToken(req);
   if (authenticationResults === false) res.status(401).send("Invalid Token!");
   else {
+    const username = authenticationResults.username;
     try {
       const result = await getPatientInformation(username, patientId);
       res.status(200).send(result);
@@ -137,17 +126,17 @@ app.get("/searchPatient", async (req, res) => {
 });
 
 app.post("/confirmPrescriptionPharmacy", async (req, res) => {
-  const username = req.body.username;
   const patientId = req.body.patientId;
   const presId = req.body.prescriptionId;
 
-  if (!username || !patientId || !presId) {
+  if (!patientId || !presId) {
     return res.status(400).send("Missing required parameter(s)");
   }
 
   const authenticationResults = authenticateToken(req);
   if (authenticationResults === false) res.status(401).send("Invalid Token!");
   else {
+    const username = authenticationResults.username;
     try {
       const result = await confirmPrescriptionPharmacy(
         username,
@@ -162,16 +151,16 @@ app.post("/confirmPrescriptionPharmacy", async (req, res) => {
 });
 
 app.post("/confirmPrescriptionPatient", async (req, res) => {
-  const username = req.body.username;
   const presId = req.body.prescriptionId;
 
-  if (!username || !presId) {
+  if (!presId) {
     return res.status(400).send("Missing required parameter(s)");
   }
 
   const authenticationResults = authenticateToken(req);
   if (authenticationResults === false) res.status(401).send("Invalid Token!");
   else {
+    const username = authenticationResults.username;
     try {
       const result = await confirmPrescriptionPatient(username, presId);
       res.status(200).send(result);
@@ -182,17 +171,17 @@ app.post("/confirmPrescriptionPatient", async (req, res) => {
 });
 
 app.post("/writePrescription", async (req, res) => {
-  const username = req.body.username;
   const patientId = req.body.patientId;
   const prescription = req.body.prescription;
 
-  if (!username || !patientId || !prescription) {
+  if (!patientId || !prescription) {
     return res.status(400).send("Missing required parameter(s)");
   }
 
   const authenticationResults = authenticateToken(req);
   if (authenticationResults === false) res.status(401).send("Invalid Token!");
   else {
+    const username = authenticationResults.username;
     try {
       const result = await writePrescription(
         username,
