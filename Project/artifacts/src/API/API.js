@@ -3,7 +3,9 @@ require("dotenv").config();
 var morgan = require("morgan");
 const express = require("express");
 var bodyParser = require("body-parser");
+const cors = require("cors"); // Import cors
 const jwt = require("jsonwebtoken");
+const getAllRecords = require("./Routes/getAllRecords");
 const login = require("./Routes/login");
 const getHomePage = require("./Routes/homePage");
 const getPrescriptionInformation = require("./Routes/prescription");
@@ -11,14 +13,15 @@ const getPatientInformation = require("./Routes/getPatientInfo");
 const confirmPrescriptionPharmacy = require("./Routes/confirmPrescriptionPharmacy");
 const confirmPrescriptionPatient = require("./Routes/confirmPrescriptionPatient");
 const writePrescription = require("./Routes/writePrescription");
-const e = require("express");
 
 const app = express();
 const PORT = 3000;
 
+app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("tiny"));
+
 
 // Authenticate the token (Valid or not valid)
 function authenticateToken(req) {
