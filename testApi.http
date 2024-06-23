@@ -56,7 +56,7 @@ Content-Type: application/json
 
 ####### Get prescription insurance
 GET http://localhost:3000/prescription HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTkxODM1NjksImV4cCI6MTcxOTE4MzYyOX0.UvCTXvkW0BblmI_iXjmR5PcqPbG6DR3-ApzaQlH1_6A
 Content-Type: application/json
 
 {

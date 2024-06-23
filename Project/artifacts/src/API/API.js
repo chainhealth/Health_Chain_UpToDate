@@ -5,7 +5,6 @@ const express = require("express");
 var bodyParser = require("body-parser");
 const cors = require("cors"); // Import cors
 const jwt = require("jsonwebtoken");
-const getAllRecords = require("./Routes/getAllRecords");
 const login = require("./Routes/login");
 const getHomePage = require("./Routes/homePage");
 const getPrescriptionInformation = require("./Routes/prescription");
@@ -38,7 +37,7 @@ function authenticateToken(req) {
 
 // Generate Token
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30m" });
 }
 
 // Return home page data for user and insurace
