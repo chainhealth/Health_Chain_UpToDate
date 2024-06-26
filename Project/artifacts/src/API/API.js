@@ -73,7 +73,40 @@ app.get("/homePage", async (req, res) => {
     }
   }
 });
+app.post("/prescription", async (req, res) => {
+  const prescriptionId = req.body.prescriptionId;
 
+  if (!prescriptionId) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  const authenticationResults = authenticateToken(req);
+  if (authenticationResults === false) res.status(401).send("Invalid Token!");
+  else {
+    const username = authenticationResults.username;
+    let patientUsername = null;
+    if (username.includes("patient")) {
+      patientUsername = username;
+    } else {
+      patientUsername = req.body.patientUsername;
+      if (!patientUsername) {
+        return res.status(400).send("Missing required parameter(s)");
+      }
+    }
+    try {
+      const result = await getPrescriptionInformation(
+        username,
+        patientUsername,
+        prescriptionId
+      );
+      res.status(200).send(result);
+    } catch (error) {
+      res.status(400).send(error.message);
+    }
+  }
+});
+
+// remove
 app.get("/prescription", async (req, res) => {
   const prescriptionId = req.body.prescriptionId;
 
@@ -107,8 +140,28 @@ app.get("/prescription", async (req, res) => {
   }
 });
 
+
+// app.get("/searchPatient", async (req, res) => {
+//   const patientId = req.body.patientId;
+
+//   if (!patientId) {
+//     return res.status(400).send("Missing required parameter(s)");
+//   }
+
+//   const authenticationResults = authenticateToken(req);
+//   if (authenticationResults === false) res.status(401).send("Invalid Token!");
+//   else {
+//     const username = authenticationResults.username;
+//     try {
+//       const result = await getPatientInformation(username, patientId);
+//       res.status(200).send(result);
+//     } catch (error) {
+//       res.status(400).send(error.message);
+//     }
+//   }
+// });
 app.get("/searchPatient", async (req, res) => {
-  const patientId = req.body.patientId;
+  const patientId = req.query.patientId; // Get patientId from query parameters
 
   if (!patientId) {
     return res.status(400).send("Missing required parameter(s)");
