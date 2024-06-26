@@ -55,8 +55,8 @@ Authorization: Bearer
 Content-Type: application/json
 
 ####### Get prescription insurance
-GET http://localhost:3000/prescription HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTkxODM1NjksImV4cCI6MTcxOTE4MzYyOX0.UvCTXvkW0BblmI_iXjmR5PcqPbG6DR3-ApzaQlH1_6A
+POST http://localhost:3000/prescription HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk0NDQ2NTMsImV4cCI6MTcxOTQ0NjQ1M30.GT0JHoccidR_DF_sJTu3DyHvpCjZs_F5uzKAMRaWTc0
 Content-Type: application/json
 
 {
@@ -65,7 +65,7 @@ Content-Type: application/json
 }
 
 ####### Get prescription doctor
-GET http://localhost:3000/prescription HTTP/1.1
+POST http://localhost:3000/prescription HTTP/1.1
 Authorization: Bearer
 Content-Type: application/json
 
@@ -75,7 +75,7 @@ Content-Type: application/json
 }
 
 ####### Get prescription patient
-GET http://localhost:3000/prescription HTTP/1.1
+POST http://localhost:3000/prescription HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5MTgwODY0LCJleHAiOjE3MTkxODA5MjR9.VYmfyVaKlwui6t097VnBHHROEHzdLeBmPhat8SeTiRY
 Content-Type: application/json
 
@@ -84,7 +84,7 @@ Content-Type: application/json
 }
 
 ####### Get prescription pharmacy
-GET http://localhost:3000/prescription HTTP/1.1
+POST http://localhost:3000/prescription HTTP/1.1
 Authorization: Bearer
 Content-Type: application/json
 
@@ -94,7 +94,7 @@ Content-Type: application/json
 }
 
 ####### Get patient doctor
-GET http://localhost:3000/searchPatient HTTP/1.1
+GET http://localhost:3000/searchPatient?patientId=patient1 HTTP/1.1
 Authorization: Bearer
 Content-Type: application/json
 
@@ -103,8 +103,8 @@ Content-Type: application/json
 }
 
 ####### Get patient pharmacy
-GET http://localhost:3000/searchPatient HTTP/1.1
-Authorization: Bearer
+GET http://localhost:3000/searchPatient?patientId=patient1 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTQ0MDk3MywiZXhwIjoxNzE5NDQyNzczfQ.EcB8pXquGBOH2oi4orqa0x-YhELQaBZu1rjcSv4srqI
 Content-Type: application/json
 
 {
@@ -112,8 +112,17 @@ Content-Type: application/json
 }
 
 ####### Get patient insurance
-GET http://localhost:3000/searchPatient HTTP/1.1
-Authorization: Bearer
+GET http://localhost:3000/searchPatient?patientId=patient1 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk0NDQ2NTMsImV4cCI6MTcxOTQ0NjQ1M30.GT0JHoccidR_DF_sJTu3DyHvpCjZs_F5uzKAMRaWTc0
+Content-Type: application/json
+
+{
+    "patientId": "patient1"
+}
+
+###### Insurance Claims Page
+GET http://localhost:3000/insuranceClaims HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk0NDM4MjgsImV4cCI6MTcxOTQ0NTYyOH0.1-1mKDr7cX_ktjPvssG1AjGZ_Gk6eFIG_LDxg9lBKNI
 Content-Type: application/json
 
 {

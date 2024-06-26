@@ -104,7 +104,7 @@ class EHRContract extends Contract {
     return ids;
   }
 
-  _createPrescriptionObjectPharmacy(prescriptions) {
+  _createPrescriptionList(prescriptions) {
     const prescArray = [];
     for (const prescription of prescriptions) {
       const tempObject = {
@@ -138,12 +138,14 @@ class EHRContract extends Contract {
       let info;
       switch (clientMSP) {
         case "PharmacyMSP":
-          const prescription = this._createPrescriptionObjectPharmacy(
+          const prescription = this._createPrescriptionList(
             parsedData.prescription
           );
           info = {
             balance: parsedData.balance.remainingBalance,
             prescription: prescription,
+            firstName: parsedData.personalInformation.firstName,
+            lastName: parsedData.personalInformation.lastName,
           };
           break;
         case "DoctorMSP":
@@ -595,6 +597,42 @@ class EHRContract extends Contract {
         throw prescInformation;
       }
       return JSON.stringify(prescInformation);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  /**
+   * Retrieves insurance claims page data for a given username.
+   * @param {string} ctx - Context object
+   * @param {string} username - Username of the patient
+   * @returns {Object} An object containing the insurance claims page data.
+   * @throws {Error} An error if the user does not have access to the records or if there is an error retrieving the data.
+   **/
+  async getInsuranceClaimsPageData(ctx, username) {
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) {
+        throw patientData;
+      }
+      const patientDataParsed = JSON.parse(patientData);
+
+      const MSPID = ledger.getMSPID(ctx);
+      if (MSPID !== "InsuranceMSP")
+        throw new Error("You don't have access to these records!");
+
+      const prescription = this._createPrescriptionList(
+        patientDataParsed.prescription
+      );
+      const info = {
+        insuranceCompany: patientDataParsed.insuranceInformation.provider,
+        firstName: patientDataParsed.personalInformation.firstName,
+        lastName: patientDataParsed.personalInformation.lastName,
+        claimedBalance: patientDataParsed.balance.claimedBalance,
+        remainingBalance: patientDataParsed.balance.remainingBalance,
+        prescription: prescription,
+      };
+      return info;
     } catch (error) {
       throw new Error(error);
     }

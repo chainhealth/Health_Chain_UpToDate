@@ -9,6 +9,7 @@ const login = require("./Routes/login");
 const getHomePage = require("./Routes/homePage");
 const getPrescriptionInformation = require("./Routes/prescription");
 const getPatientInformation = require("./Routes/getPatientInfo");
+const getInsuranceClaims = require("./Routes/insuranceClaims");
 const confirmPrescriptionPharmacy = require("./Routes/confirmPrescriptionPharmacy");
 const confirmPrescriptionPatient = require("./Routes/confirmPrescriptionPatient");
 const writePrescription = require("./Routes/writePrescription");
@@ -20,7 +21,6 @@ app.use(cors()); // Use cors middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("tiny"));
-
 
 // Authenticate the token (Valid or not valid)
 function authenticateToken(req) {
@@ -73,6 +73,7 @@ app.get("/homePage", async (req, res) => {
     }
   }
 });
+
 app.post("/prescription", async (req, res) => {
   const prescriptionId = req.body.prescriptionId;
 
@@ -106,62 +107,8 @@ app.post("/prescription", async (req, res) => {
   }
 });
 
-// remove
-app.get("/prescription", async (req, res) => {
-  const prescriptionId = req.body.prescriptionId;
-
-  if (!prescriptionId) {
-    return res.status(400).send("Missing required parameter(s)");
-  }
-
-  const authenticationResults = authenticateToken(req);
-  if (authenticationResults === false) res.status(401).send("Invalid Token!");
-  else {
-    const username = authenticationResults.username;
-    let patientUsername = null;
-    if (username.includes("patient")) {
-      patientUsername = username;
-    } else {
-      patientUsername = req.body.patientUsername;
-      if (!patientUsername) {
-        return res.status(400).send("Missing required parameter(s)");
-      }
-    }
-    try {
-      const result = await getPrescriptionInformation(
-        username,
-        patientUsername,
-        prescriptionId
-      );
-      res.status(200).send(result);
-    } catch (error) {
-      res.status(400).send(error.message);
-    }
-  }
-});
-
-
-// app.get("/searchPatient", async (req, res) => {
-//   const patientId = req.body.patientId;
-
-//   if (!patientId) {
-//     return res.status(400).send("Missing required parameter(s)");
-//   }
-
-//   const authenticationResults = authenticateToken(req);
-//   if (authenticationResults === false) res.status(401).send("Invalid Token!");
-//   else {
-//     const username = authenticationResults.username;
-//     try {
-//       const result = await getPatientInformation(username, patientId);
-//       res.status(200).send(result);
-//     } catch (error) {
-//       res.status(400).send(error.message);
-//     }
-//   }
-// });
 app.get("/searchPatient", async (req, res) => {
-  const patientId = req.query.patientId; // Get patientId from query parameters
+  const patientId = req.query.patientId;
 
   if (!patientId) {
     return res.status(400).send("Missing required parameter(s)");
@@ -173,6 +120,26 @@ app.get("/searchPatient", async (req, res) => {
     const username = authenticationResults.username;
     try {
       const result = await getPatientInformation(username, patientId);
+      res.status(200).send(result);
+    } catch (error) {
+      res.status(400).send(error.message);
+    }
+  }
+});
+
+app.get("/insuranceClaims", async (req, res) => {
+  const patientId = req.body.patientId;
+
+  if (!patientId) {
+    return res.status(400).send("Missing required parameter(s)");
+  }
+
+  const authenticationResults = authenticateToken(req);
+  if (authenticationResults === false) res.status(401).send("Invalid Token!");
+  else {
+    const username = authenticationResults.username;
+    try {
+      const result = await getInsuranceClaims(username, patientId);
       res.status(200).send(result);
     } catch (error) {
       res.status(400).send(error.message);
