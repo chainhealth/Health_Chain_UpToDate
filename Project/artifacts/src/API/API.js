@@ -13,6 +13,7 @@ const getInsuranceClaims = require("./Routes/insuranceClaims");
 const confirmPrescriptionPharmacy = require("./Routes/confirmPrescriptionPharmacy");
 const confirmPrescriptionPatient = require("./Routes/confirmPrescriptionPatient");
 const writePrescription = require("./Routes/writePrescription");
+const getMedicineList = require("./Routes/medicines");
 
 const app = express();
 const PORT = 3000;
@@ -211,6 +212,20 @@ app.post("/writePrescription", async (req, res) => {
         JSON.stringify(prescription)
       );
       res.status(200).send(result);
+    } catch (error) {
+      res.status(400).send(error.message);
+    }
+  }
+});
+
+app.get("/medicines", async (req, res) => {
+  const authenticationResults = authenticateToken(req);
+  if (authenticationResults === false) res.status(401).send("Invalid Token!");
+  else {
+    const username = authenticationResults.username;
+    try {
+      const medicineNames = await getMedicineList(username);
+      res.status(200).send(medicineNames);
     } catch (error) {
       res.status(400).send(error.message);
     }

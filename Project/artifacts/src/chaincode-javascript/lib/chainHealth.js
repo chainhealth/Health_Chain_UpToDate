@@ -331,6 +331,26 @@ class EHRContract extends Contract {
     }
   }
 
+  /**
+   * @see docs.js
+   */
+  async getMedicineList(ctx) {
+    try {
+      const clientMSP = ledger.getMSPID(ctx);
+      if (clientMSP !== "DoctorMSP")
+        throw new Error("Error: You don't have access to view medicines!");
+
+      const medListDB = await ledger.queryRecord(ctx, "Medicines");
+      if (medListDB instanceof Error)
+        throw new Error("Error downloading medicines!");
+      const medListDBParsed = JSON.parse(medListDB);
+
+      return medListDBParsed.map((medicine) => medicine.name);
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
   _hashPassword(password) {
     return crypto.createHash("sha256").update(password).digest("hex");
   }
