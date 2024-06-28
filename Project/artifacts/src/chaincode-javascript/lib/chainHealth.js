@@ -3,6 +3,7 @@
 const Ledger = require("./ledger.js");
 const { Contract } = require("fabric-contract-api");
 const crypto = require("crypto");
+const MedicalRecords = require("./records.js");
 
 const ledger = new Ledger();
 
@@ -17,14 +18,13 @@ const ERROR_MESSAGES = {
 
 class EHRContract extends Contract {
   /**
-   * Initializes the ledger with initial data.
-   * @param {Context} ctx The transaction context.
-   * @returns {string} A message indicating the success of ledger initialization.
-   * @throws {Error} If an error occurs during ledger initialization.
+   * @see docs.js
    */
   async InitLedger(ctx) {
+    const medicalRecords = new MedicalRecords();
     try {
       // Storing patient data
+      const patientRecords = medicalRecords.getPatientRecords();
       for (const patientRecord of patientRecords) {
         const hashedPassword = this._hashPassword(patientRecord.password);
         patientRecord.password = hashedPassword;
@@ -32,6 +32,7 @@ class EHRContract extends Contract {
       }
 
       // Storing pharmacy data
+      const pharmacyRecords = medicalRecords.getPharmacyRecords();
       for (const pharmRecord of pharmacyRecords) {
         const hashedPassword = this._hashPassword(pharmRecord.password);
         pharmRecord.password = hashedPassword;
@@ -39,6 +40,7 @@ class EHRContract extends Contract {
       }
 
       // storing doctor records
+      const doctorRecords = medicalRecords.getDoctorRecords();
       for (const doctorRecord of doctorRecords) {
         const hashedPassword = this._hashPassword(doctorRecord.password);
         doctorRecord.password = hashedPassword;
@@ -46,6 +48,7 @@ class EHRContract extends Contract {
       }
 
       // Storing insurance records
+      const insuranceRecords = medicalRecords.getInsuranceRecords();
       for (const insuranceRecord of insuranceRecords) {
         const hashedPassword = this._hashPassword(insuranceRecord.password);
         insuranceRecord.password = hashedPassword;
@@ -53,6 +56,7 @@ class EHRContract extends Contract {
       }
 
       // Storing medicine information
+      const medicineList = medicalRecords.getMedicineList();
       await ledger.writeRecord(ctx, "Medicines", medicineList);
 
       return "Successfully initialized the ledger!";
@@ -61,12 +65,6 @@ class EHRContract extends Contract {
     }
   }
 
-  /**
-   * Retrieves all records from the ledger.
-   * @param {Context} ctx The transaction context.
-   * @returns {string} JSON string representing all records.
-   * @throws {Error} If an error occurs while retrieving records.
-   */
   async getAllRecords(ctx) {
     try {
       return await ledger.getAllRecords(ctx);
@@ -75,131 +73,72 @@ class EHRContract extends Contract {
     }
   }
 
-  _calculateAge(birthDateString) {
-    // Parse the birth date string to a Date object
-    const birthDate = new Date(birthDateString);
-    // Get the current date
-    const today = new Date();
+  /**
+   * @see docs.js
+   */
+  async login(ctx, username, enteredPassword) {
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) throw patientData;
 
-    // Calculate the age
-    let age = today.getFullYear() - birthDate.getFullYear();
+      const patientDataParsed = JSON.parse(patientData);
+      const hashedPassword = patientDataParsed.password;
+      const hashedEnteredPassword = this._hashPassword(enteredPassword);
 
-    // Adjust the age if the birth date hasn't occurred yet this year
-    const monthDifference = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDifference < 0 ||
-      (monthDifference === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
+      if (hashedPassword === hashedEnteredPassword) {
+        return true;
+      } else {
+        throw new Error("Invalid username or password!");
+      }
+    } catch (error) {
+      throw new Error(ERROR_MESSAGES.LOGIN + error);
     }
-
-    return age;
-  }
-
-  _getPrescriptionIds(prescriptionList) {
-    const ids = [];
-    for (let i = 0; i < prescriptionList.length - 1; i++) {
-      ids.push(prescriptionList[i].prescriptionID);
-    }
-    return ids;
-  }
-
-  _createPrescriptionList(prescriptions) {
-    const prescArray = [];
-    for (const prescription of prescriptions) {
-      const tempObject = {
-        prescriptionId: prescription.prescriptionID,
-        state: prescription.state,
-      };
-      prescArray.push(tempObject);
-    }
-    return prescArray;
   }
 
   /**
-   * Retrieves patient information based on the provided patient ID.
-   * @param {Context} ctx The transaction context.
-   * @param {string} patientId The ID of the patient.
-   * @returns {object} Patient information.
-   * @throws {Error} If an error occurs while retrieving patient information.
+   * @see docs.js
    */
   async getPatientInfo(ctx, patientId) {
     try {
       const patientData = await ledger.queryRecord(ctx, patientId);
-      if (patientData instanceof Error) {
-        throw patientData;
-      }
+      if (patientData instanceof Error) throw patientData;
 
-      // parse the patient Data
       const parsedData = JSON.parse(patientData);
       const clientMSP = ledger.getMSPID(ctx);
 
-      // Return the desired patient information
-      let info;
-      switch (clientMSP) {
-        case "PharmacyMSP":
-          const prescription = this._createPrescriptionList(
-            parsedData.prescription
-          );
-          info = {
-            balance: parsedData.balance.remainingBalance,
-            prescription: prescription,
-            firstName: parsedData.personalInformation.firstName,
-            lastName: parsedData.personalInformation.lastName,
-          };
-          break;
-        case "DoctorMSP":
-          const age = this._calculateAge(
-            parsedData.personalInformation.dateOfBirth
-          );
-          const prescIds = this._getPrescriptionIds(parsedData.prescription);
-          info = {
-            firstName: parsedData.personalInformation.firstName,
-            lastName: parsedData.personalInformation.lastName,
-            age: age,
-            gender: parsedData.personalInformation.gender,
-            chronicDiseases: parsedData.medicalHistory.chronicDiseases,
-            allergies: parsedData.medicalHistory.allergies,
-            surgeries: parsedData.medicalHistory.surgeries,
-            medications: parsedData.medicalHistory.medications,
-            oldPrescription: prescIds,
-          };
-          break;
-        case "InsuranceMSP":
-          info = {
-            firstName: parsedData.personalInformation.firstName,
-            lastName: parsedData.personalInformation.lastName,
-            dateOfBirth: parsedData.personalInformation.dateOfBirth,
-            gender: parsedData.personalInformation.gender,
-            insuranceInformation: parsedData.insuranceInformation,
-          };
-          break;
-        default:
-          throw new Error("You don't have access to this record!");
-      }
-      return info;
+      // Encapsulated the logic of fetching patient info based on MSP
+      return this._getPatientInfoByMSP(parsedData, clientMSP);
     } catch (error) {
       throw new Error(ERROR_MESSAGES.GET_RECORD + error);
     }
   }
 
   /**
-   * Retrieves pharmacy information based on the provided pharmacy ID.
-   * @param {Context} ctx The transaction context.
-   * @param {string} pharmacyId The ID of the pharmacy.
-   * @returns {object} Pharmacy information.
-   * @throws {Error} If an error occurs while retrieving pharmacy information.
+   * @see docs.js
+   */
+  async getHomePage(ctx, username) {
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) throw patientData;
+
+      const patientDataParsed = JSON.parse(patientData);
+      const MSPID = ledger.getMSPID(ctx);
+
+      // Encapsulated home page data fetching logic
+      return this._getHomePageData(ctx, MSPID, patientDataParsed);
+    } catch (error) {
+      throw new Error(ERROR_MESSAGES.LOGIN + error);
+    }
+  }
+
+  /**
+   * @see docs.js
    */
   async getPharmacyInfo(ctx, pharmacyId) {
     try {
       const pharmacyData = await ledger.queryRecord(ctx, pharmacyId);
+      if (pharmacyData instanceof Error) throw pharmacyData;
 
-      // If pharmacy is not found
-      if (pharmacyData instanceof Error) {
-        throw pharmacyData;
-      }
-
-      // Parse the patient data
       const parsedData = JSON.parse(pharmacyData);
       const clientMSP = ledger.getMSPID(ctx);
 
@@ -209,70 +148,15 @@ class EHRContract extends Contract {
           pharmacyAddress: parsedData.phramacyAddress,
         };
       } else {
-        throw new Error("You don't hace access to this record");
+        throw new Error("You don't have access to this record");
       }
     } catch (error) {
       throw new Error(ERROR_MESSAGES.GET_RECORD + error);
     }
   }
 
-  async _updatePrescription(ctx, patientDataJSON, issuingDoctor, prescription) {
-    try {
-      // Calulate the prescriptionId
-      const prescriptionId = `pres${patientDataJSON.prescription.length + 1}`;
-
-      const prescriptionObject = {
-        prescriptionID: prescriptionId,
-        state: "issued",
-        issuingDoctor: issuingDoctor,
-        medicines: prescription.medicine,
-        report: prescription.report,
-      };
-      patientDataJSON.prescription.push(prescriptionObject);
-      patientDataJSON.medicalHistory.medications = prescription;
-      await ledger.writeRecord(ctx, patientDataJSON.id, patientDataJSON);
-    } catch (error) {
-      throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION + error);
-    }
-  }
-
-  async _createPrescriptionObject(ctx, prescription) {
-    const enteredMedicines = prescription.medicine;
-    const medicineArray = [];
-
-    const medList = await ledger.queryRecord(ctx, "Medicines");
-    const medListParsed = JSON.parse(medList);
-
-    for (const med of enteredMedicines) {
-      const foundMedicine = medListParsed.find(
-        (medicine) => medicine.name === med.name
-      );
-      if (foundMedicine) {
-        const temp = {
-          medicineName: foundMedicine.name,
-          description: foundMedicine.description,
-          frequency: med.frequency,
-          dosage: med.dosage,
-        };
-        medicineArray.push(temp);
-      } else {
-        throw new Error("Medicine does not exist!");
-      }
-    }
-    return {
-      report: prescription.report,
-      medicine: medicineArray,
-    };
-  }
-
   /**
-   * Writes a prescription for a patient.
-   * @param {Context} ctx The transaction context.
-   * @param {string} patientId The ID of the patient.
-   * @param {string} issuingDoctor The doctor id who is issuing the prescription.
-   * @param {string} prescription The prescription details.
-   * @returns {string} A message indicating the success of prescription writing.
-   * @throws {Error} If an error occurs while writing the prescription.
+   * @see docs.js
    */
   async writePatientPrescription(ctx, patientId, issuingDoctor, prescription) {
     try {
@@ -282,110 +166,44 @@ class EHRContract extends Contract {
       }
 
       const patientData = await ledger.queryRecord(ctx, patientId);
-      console.log(patientData);
-      // If patient is not found
-      if (patientData instanceof Error) {
-        throw patientData;
-      }
+      if (patientData instanceof Error) throw patientData;
 
-      // Parse Patient Data
       const parsedData = JSON.parse(patientData);
       const parsedPrescription = JSON.parse(prescription);
 
+      // Encapsulated prescription creation logic in a private method
       const prescriptionData = await this._createPrescriptionObject(
         ctx,
         parsedPrescription
       );
-
-      if (prescriptionData instanceof Error) {
-        throw prescriptionData;
-      }
-
+      // Encapsulated prescription update logic in a private method
       await this._updatePrescription(
         ctx,
         parsedData,
         issuingDoctor,
         prescriptionData
       );
-      return "Updated the prescription seccessfully!";
+
+      return "Updated the prescription successfully!";
     } catch (error) {
       throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION + error.message);
     }
   }
 
-  _getPrescriptionById(prescriptionList, prescriptionId) {
-    for (const prescription of prescriptionList) {
-      if (prescription.prescriptionID === prescriptionId) {
-        return prescription;
-      }
-    }
-    throw new Error("No prescription with the entered id!");
-  }
-
-  _writeConfirmDataPatient(prescription) {
-    prescription.state = "purchased";
-  }
-
-  async _calculatePrescriptionCost(ctx, prescription) {
-    const medListDB = await ledger.queryRecord(ctx, "Medicines");
-    const medListDBParsed = JSON.parse(medListDB);
-    let totalCost = 0;
-
-    for (const medicine of prescription) {
-      const medicineName = medicine.medicineName;
-
-      const medicineDB = medListDBParsed.find(
-        (medicine) => medicine.name === medicineName
-      );
-
-      totalCost += parseInt(medicineDB.cost);
-    }
-    return totalCost;
-  }
-
-  async _criteriaCheck(patientData) {
-    if (patientData.insuranceInformation.state !== "active") {
-      throw new Error("Inactive insurance subscription!");
-    }
-  }
-
-  async _insuranceCheck(ctx, patientData, prescription) {
-    const totalPrescriptionCost = await this._calculatePrescriptionCost(
-      ctx,
-      prescription
-    );
-
-    if (patientData.balance.remainingBalance < totalPrescriptionCost) {
-      throw new Error("Insufficient balance!");
-    } else {
-      patientData.balance.remainingBalance -= totalPrescriptionCost;
-    }
-  }
-
-  _writeConfirmDataPharmacy(prescription, parsedPharmacyData) {
-    prescription.state = "confirmed1";
-    prescription.pharmacyName = parsedPharmacyData.pharmacyName;
-    prescription.phramacyAddress = parsedPharmacyData.phramacyAddress;
-  }
-
+  /**
+   * @see docs.js
+   */
   async confirmPrescriptionSalePharmacy(ctx, pharmacyId, patientId, presId) {
     try {
       const clientMSP = ledger.getMSPID(ctx);
-      if (clientMSP !== "PharmacyMSP") {
-        throw new Error("Access Denied!");
-      }
+      if (clientMSP !== "PharmacyMSP") throw new Error("Access Denied!");
 
       const pharmacyData = await ledger.queryRecord(ctx, pharmacyId);
-      if (pharmacyData instanceof Error) {
-        throw pharmacyData;
-      }
+      if (pharmacyData instanceof Error) throw pharmacyData;
 
       const patientData = await ledger.queryRecord(ctx, patientId);
-      if (patientData instanceof Error) {
-        throw patientData;
-      }
+      if (patientData instanceof Error) throw patientData;
 
-      //Parse Data
       const parsedPatientData = JSON.parse(patientData);
       const parsedPharmacyData = JSON.parse(pharmacyData);
 
@@ -393,17 +211,15 @@ class EHRContract extends Contract {
         parsedPatientData.prescription,
         presId
       );
-      if (prescription instanceof Error) {
-        throw prescription;
-      }
+      if (prescription instanceof Error) throw prescription;
 
       if (prescription.state === "purchased") {
-        throw new Error("Prescription is alrady purchased!");
+        throw new Error("Prescription is already purchased!");
       }
 
-      // criteria check
+      // Placeholder for any checks needed
       this._criteriaCheck(parsedPatientData);
-
+      // Encapsulated prescription confirmation data update logic
       this._writeConfirmDataPharmacy(prescription, parsedPharmacyData);
 
       await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
@@ -413,6 +229,9 @@ class EHRContract extends Contract {
     }
   }
 
+  /**
+   * @see docs.js
+   */
   async confirmPrescriptionSalePatient(ctx, patientId, presId) {
     try {
       const clientMSP = ledger.getMSPID(ctx);
@@ -457,10 +276,243 @@ class EHRContract extends Contract {
     }
   }
 
+  /**
+   * @see docs.js
+   */
+  async getPrescriptionInformation(ctx, username, prescriptionId) {
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) throw patientData;
+
+      const patientDataParsed = JSON.parse(patientData);
+      if (!patientDataParsed.prescription)
+        throw new Error("Patient does not have any prescription!");
+
+      // Encapsulated prescription fetching logic
+      const prescInformation = this._getPrescriptionById(
+        patientDataParsed.prescription,
+        prescriptionId
+      );
+      if (prescInformation instanceof Error) throw prescInformation;
+
+      return JSON.stringify(prescInformation);
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  /**
+   * @see docs.js
+   */
+  async getInsuranceClaimsPageData(ctx, username) {
+    try {
+      const patientData = await ledger.queryRecord(ctx, username);
+      if (patientData instanceof Error) throw patientData;
+
+      const patientDataParsed = JSON.parse(patientData);
+      const MSPID = ledger.getMSPID(ctx);
+      if (MSPID !== "InsuranceMSP")
+        throw new Error("You don't have access to these records!");
+
+      // Encapsulated prescription list creation logic
+      const prescription = this._createPrescriptionList(
+        patientDataParsed.prescription
+      );
+      return {
+        insuranceCompany: patientDataParsed.insuranceInformation.provider,
+        firstName: patientDataParsed.personalInformation.firstName,
+        lastName: patientDataParsed.personalInformation.lastName,
+        claimedBalance: patientDataParsed.balance.claimedBalance,
+        remainingBalance: patientDataParsed.balance.remainingBalance,
+        prescription: prescription,
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   _hashPassword(password) {
-    const hash = crypto.createHash("sha256");
-    hash.update(password);
-    return hash.digest("hex");
+    return crypto.createHash("sha256").update(password).digest("hex");
+  }
+
+  _createPrescriptionList(prescriptions) {
+    return prescriptions.map((prescription) => ({
+      prescriptionId: prescription.prescriptionID,
+      state: prescription.state,
+    }));
+  }
+
+  _getPrescriptionIds(prescriptionList) {
+    return prescriptionList.map((prescription) => prescription.prescriptionID);
+  }
+
+  _calculateAge(birthDateString) {
+    const birthDate = new Date(birthDateString);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+    const dayDifference = today.getDate() - birthDate.getDate();
+
+    if (monthDifference < 0 || (monthDifference === 0 && dayDifference < 0)) {
+      age--;
+    }
+
+    return age;
+  }
+
+  _getPatientInfoByMSP(parsedData, clientMSP) {
+    let info;
+    switch (clientMSP) {
+      case "DoctorMSP":
+        const age = this._calculateAge(
+          parsedData.personalInformation.dateOfBirth
+        );
+        const prescIds = this._getPrescriptionIds(parsedData.prescription);
+        info = {
+          firstName: parsedData.personalInformation.firstName,
+          lastName: parsedData.personalInformation.lastName,
+          age: age,
+          gender: parsedData.personalInformation.gender,
+          chronicDiseases: parsedData.medicalHistory.chronicDiseases,
+          allergies: parsedData.medicalHistory.allergies,
+          surgeries: parsedData.medicalHistory.surgeries,
+          medications: parsedData.medicalHistory.medications,
+          oldPrescription: prescIds,
+        };
+      case "InsuranceMSP":
+        info = {
+          firstName: parsedData.personalInformation.firstName,
+          lastName: parsedData.personalInformation.lastName,
+          dateOfBirth: parsedData.personalInformation.dateOfBirth,
+          gender: parsedData.personalInformation.gender,
+          insuranceInformation: parsedData.insuranceInformation,
+        };
+        break;
+      case "PharmacyMSP":
+        const prescription = this._createPrescriptionList(
+          parsedData.prescription
+        );
+        info = {
+          balance: parsedData.balance.remainingBalance,
+          prescription: prescription,
+          firstName: parsedData.personalInformation.firstName,
+          lastName: parsedData.personalInformation.lastName,
+        };
+        break;
+      default:
+        throw new Error("You don't have access to this record");
+    }
+    return info;
+  }
+
+  async _createPrescriptionObject(ctx, prescription) {
+    const enteredMedicines = prescription.medicine;
+    const medicineArray = [];
+
+    const medList = await ledger.queryRecord(ctx, "Medicines");
+    const medListParsed = JSON.parse(medList);
+
+    for (const med of enteredMedicines) {
+      const foundMedicine = medListParsed.find(
+        (medicine) => medicine.name === med.name
+      );
+      if (foundMedicine) {
+        const temp = {
+          medicineName: foundMedicine.name,
+          description: foundMedicine.description,
+          frequency: med.frequency,
+          dosage: med.dosage,
+        };
+        medicineArray.push(temp);
+      } else {
+        throw new Error("Medicine does not exist!");
+      }
+    }
+    return {
+      report: prescription.report,
+      medicine: medicineArray,
+    };
+  }
+
+  async _updatePrescription(ctx, patientDataJSON, issuingDoctor, prescription) {
+    try {
+      const prescriptionId = `pres${patientDataJSON.prescription.length + 1}`;
+
+      const prescriptionObject = {
+        prescriptionID: prescriptionId,
+        state: "issued",
+        issuingDoctor: issuingDoctor,
+        medicines: prescription.medicine,
+        report: prescription.report,
+      };
+      patientDataJSON.prescription.push(prescriptionObject);
+      patientDataJSON.medicalHistory.medications = prescription;
+      await ledger.writeRecord(ctx, patientDataJSON.id, patientDataJSON);
+    } catch (error) {
+      throw new Error(ERROR_MESSAGES.UPDATE_PRESCRIPTION + error);
+    }
+  }
+
+  async _criteriaCheck(patientData) {
+    if (patientData.insuranceInformation.state !== "active") {
+      throw new Error("Inactive insurance subscription!");
+    }
+  }
+
+  _writeConfirmDataPharmacy(prescription, parsedPharmacyData) {
+    prescription.state = "confirmed1";
+    prescription.pharmacyName = parsedPharmacyData.pharmacyName;
+    prescription.phramacyAddress = parsedPharmacyData.phramacyAddress;
+  }
+
+  async _calculatePrescriptionCost(ctx, prescription) {
+    const medListDB = await ledger.queryRecord(ctx, "Medicines");
+    const medListDBParsed = JSON.parse(medListDB);
+    let totalCost = 0;
+
+    for (const medicine of prescription) {
+      const medicineName = medicine.medicineName;
+
+      const medicineDB = medListDBParsed.find(
+        (medicine) => medicine.name === medicineName
+      );
+      if (!medListDB) throw new Error("Medicine is not coverd by insurance!");
+
+      totalCost += parseInt(medicineDB.cost);
+    }
+    return totalCost;
+  }
+
+  async _insuranceCheck(ctx, patientData, prescription) {
+    try {
+      const totalPrescriptionCost = await this._calculatePrescriptionCost(
+        ctx,
+        prescription
+      );
+
+      if (patientData.balance.remainingBalance < totalPrescriptionCost) {
+        throw new Error("Insufficient balance!");
+      } else {
+        patientData.balance.remainingBalance -= totalPrescriptionCost;
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  _writeConfirmDataPatient(prescription) {
+    prescription.state = "purchased";
+  }
+
+  _getPrescriptionById(prescriptions, prescriptionId) {
+    const prescription = prescriptions.find(
+      (p) => p.prescriptionID === prescriptionId
+    );
+    if (!prescription) {
+      return new Error("Prescription not found!");
+    }
+    return prescription;
   }
 
   _createPatientPageData(parsedData) {
@@ -501,360 +553,32 @@ class EHRContract extends Contract {
     return userRecords;
   }
 
-  async getHomePage(ctx, username) {
-    try {
-      const patientData = await ledger.queryRecord(ctx, username);
-      if (patientData instanceof Error) {
-        throw patientData;
-      }
-
-      const patientDataParsed = JSON.parse(patientData);
-      const MSPID = ledger.getMSPID(ctx);
-      if (MSPID === "PharmacyMSP") {
-        return {
-          userType: "Pharmacy",
-        };
-      }
-      if (MSPID === "DoctorMSP") {
-        return {
-          userType: "Doctor",
-        };
-      }
-      if (MSPID === "MinistryofhealthMSP") {
-        const pageData = this._createPatientPageData(patientDataParsed);
-        return {
-          pageData: pageData,
-          userType: "MinistryofhealthMSP",
-        };
-      }
-      if (MSPID === "InsuranceMSP") {
-        const userData = await this._createInsurancePageData(ctx);
-        return {
-          userType: "Insurance",
-          insuranceName: patientDataParsed.insuranceName,
-          userData: userData,
-        };
-      } else {
-        throw new Error("Wrong username or password!");
-      }
-    } catch (error) {
-      throw new Error(ERROR_MESSAGES.LOGIN + error);
-    }
-  }
-
-  /**
-   * Logs in a user with the provided username and password.
-   * @param {Context} ctx The transaction context.
-   * @param {string} username The username of the user.
-   * @param {string} enteredPassword The entered password of the user.
-   * @returns {string} Home page data depending on user type
-   * @throws {Error} If an error occurs during the login process.
-   */
-  async login(ctx, username, enteredPassword) {
-    try {
-      const patientData = await ledger.queryRecord(ctx, username);
-      if (patientData instanceof Error) {
-        throw patientData;
-      }
-
-      const patientDataParsed = JSON.parse(patientData);
-      const hashedPassword = patientDataParsed.password;
-      const hashedEnteredPassword = this._hashPassword(enteredPassword);
-
-      if (hashedPassword === hashedEnteredPassword) {
-        return true;
-      } else {
-        throw new Error("Invalid username or passwrod!");
-      }
-    } catch (error) {
-      throw new Error(ERROR_MESSAGES.LOGIN + error);
-    }
-  }
-
-  /**
-   * Retrieves prescription information for a given user.
-   * @param {object} ctx - The context objec
-   * @param {string} username - The username of the patient for whom to retrieve prescription information.
-   * @param {string} prescriptionId - The unique identifier of the specific prescription to retrieve.
-   * @returns {String} A string that contains the presction information
-   * @throws {Error} If any errors occur during data retrieval or processing.
-   */
-  async getPrescriptionInformation(ctx, username, prescriptionId) {
-    try {
-      const patientData = await ledger.queryRecord(ctx, username);
-      if (patientData instanceof Error) {
-        throw patientData;
-      }
-      const patientDataParsed = JSON.parse(patientData);
-      if (!patientDataParsed.prescription) {
-        throw "Patinet deoes not have any prescription!";
-      }
-
-      const prescInformation = this._getPrescriptionById(
-        patientDataParsed.prescription,
-        prescriptionId
-      );
-      if (prescInformation instanceof Error) {
-        throw prescInformation;
-      }
-      return JSON.stringify(prescInformation);
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-
-  /**
-   * Retrieves insurance claims page data for a given username.
-   * @param {string} ctx - Context object
-   * @param {string} username - Username of the patient
-   * @returns {Object} An object containing the insurance claims page data.
-   * @throws {Error} An error if the user does not have access to the records or if there is an error retrieving the data.
-   **/
-  async getInsuranceClaimsPageData(ctx, username) {
-    try {
-      const patientData = await ledger.queryRecord(ctx, username);
-      if (patientData instanceof Error) {
-        throw patientData;
-      }
-      const patientDataParsed = JSON.parse(patientData);
-
-      const MSPID = ledger.getMSPID(ctx);
-      if (MSPID !== "InsuranceMSP")
-        throw new Error("You don't have access to these records!");
-
-      const prescription = this._createPrescriptionList(
-        patientDataParsed.prescription
-      );
-      const info = {
-        insuranceCompany: patientDataParsed.insuranceInformation.provider,
-        firstName: patientDataParsed.personalInformation.firstName,
-        lastName: patientDataParsed.personalInformation.lastName,
-        claimedBalance: patientDataParsed.balance.claimedBalance,
-        remainingBalance: patientDataParsed.balance.remainingBalance,
-        prescription: prescription,
+  async _getHomePageData(ctx, MSPID, patientDataParsed) {
+    if (MSPID === "MinistryofhealthMSP") {
+      const pageData = this._createPatientPageData(patientDataParsed);
+      return {
+        pageData: pageData,
+        userType: "MinistryofhealthMSP",
       };
-      return info;
-    } catch (error) {
-      throw new Error(error);
+    } else if (MSPID === "DoctorMSP") {
+      return {
+        userType: "Doctor",
+      };
+    } else if (MSPID === "PharmacyMSP") {
+      return {
+        userType: "Pharmacy",
+      };
+    } else if (MSPID === "InsuranceMSP") {
+      const userData = await this._createInsurancePageData(ctx);
+      return {
+        userType: "Insurance",
+        insuranceName: patientDataParsed.insuranceName,
+        userData: userData,
+      };
+    } else {
+      throw new Error("Access Denied!");
     }
   }
 }
 
-// Exporting the EHRContract class
 module.exports = EHRContract;
-
-// Sample patient records for ledger initialization
-const patientRecords = [
-  {
-    id: "patient1",
-    password: "patient12345",
-    personalInformation: {
-      firstName: "Seifeldin",
-      lastName: "Sami",
-      dateOfBirth: "2001-07-06",
-      gender: "Male",
-      contactInformation: {
-        address: "123 Main St",
-        city: "Anytown",
-        state: "Anystate",
-        country: "AnyCountry",
-        postalCode: "12345",
-        phoneNumber: "123-456-7890",
-        email: "seif@gmail.com",
-      },
-    },
-    medicalHistory: {
-      chronicDiseases: ["Diabetes", "High Blood Pressure"],
-      allergies: ["Peanuts"],
-      surgeries: ["Appendectomy in 2015"],
-      medications: [
-        {
-          name: "Metformin",
-          dosage: "500mg",
-          frequency: "Twice daily",
-        },
-      ],
-    },
-    insuranceInformation: {
-      provider: "Insurance Co.",
-      policyNumber: "ins1",
-      state: "active",
-    },
-    prescription: [
-      {
-        prescriptionID: "pres1",
-        state: "purchased",
-        issuingDoctor: "Dr. Smith",
-        medicines: [
-          {
-            name: "Aspirin",
-            dosage: "325mg",
-            frequency: "Once daily as needed",
-          },
-          {
-            name: "Ibuprofen",
-            dosage: "200mg",
-            frequency: "Every 4-6 hours as needed",
-          },
-        ],
-      },
-      {
-        prescriptionID: "pres2",
-        state: "purchased",
-        issuingDoctor: "Dr. Jones",
-        medicines: [
-          {
-            name: "Zyrtec",
-            dosage: "10mg",
-            frequency: "Once daily",
-          },
-        ],
-      },
-    ],
-    balance: {
-      remainingBalance: "100",
-      claimedBalance: "500",
-    },
-  },
-  {
-    id: "patient2",
-    password: "patient12345",
-    personalInformation: {
-      firstName: "Aisha",
-      lastName: "Khan",
-      dateOfBirth: "1985-01-15",
-      gender: "Female",
-      contactInformation: {
-        address: "456 Elm St",
-        city: "Big City",
-        state: "CA",
-        country: "USA",
-        postalCode: "98765",
-        phoneNumber: "555-555-5555",
-        email: "aishu@example.com",
-      },
-    },
-    medicalHistory: {
-      chronicDiseases: ["Asthma"],
-      allergies: ["Penicillin"],
-      surgeries: ["None"],
-      medications: [
-        {
-          name: "Albuterol inhaler",
-          dosage: "2 puffs as needed",
-          frequency: "N/A",
-        },
-      ],
-    },
-    insuranceInformation: {
-      provider: "HealthCare Inc.",
-      policyNumber: "ins222",
-      state: "active",
-    },
-    prescription: [
-      {
-        prescriptionID: "pres1",
-        state: "purchased",
-        issuingDoctor: "Dr. Lee",
-        medicines: [
-          {
-            name: "Amoxicillin",
-            dosage: "500mg",
-            frequency: "Twice daily for 7 days",
-          },
-        ],
-      },
-      {
-        prescriptionID: "pres2",
-        state: "purchased",
-        issuingDoctor: "Dr. Williams",
-        medicines: [
-          {
-            name: "Flonase nasal spray",
-            dosage: "1 spray per nostril daily",
-            frequency: "As needed",
-          },
-        ],
-      },
-    ],
-    balance: {
-      remainingBalance: "200",
-      claimedBalance: "700",
-    },
-  },
-];
-
-const pharmacyRecords = [
-  {
-    id: "pharmacy1",
-    pharmacyName: "El-Ezaby",
-    phramacyAddress: "Al-Rehab 2",
-    password: "pharmacy12345",
-  },
-  {
-    id: "pharmacy2",
-    pharmacyName: "El-Tarshouby",
-    phramacyAddress: "Nasr City",
-    password: "pharmacy12345",
-  },
-];
-
-const doctorRecords = [
-  {
-    id: "doctor1",
-    firstName: "Mina",
-    lastName: "Saad",
-    password: "doctor12345",
-  },
-  {
-    id: "doctor2",
-    firstName: "Peter",
-    lastName: "Samy",
-    password: "doctor12345",
-  },
-];
-
-const insuranceRecords = [
-  {
-    id: "insurance1",
-    insuranceName: "AXA",
-    password: "insurance12345",
-  },
-  {
-    id: "insurance2",
-    insuranceName: "ALLIANZ",
-    password: "insurance12345",
-  },
-];
-/* prettier-ignore */
-const medicineList = [
-  { name: "Aspirin", description: "Pain reliever, 200mg tablets", cost: 15, frequency: 2 },
-  { name: "Ibuprofen", description: "Pain reliever and fever reducer, 200mg tablets", cost: 18, frequency: 3 },
-  { name: "Acetaminophen", description: "Pain reliever and fever reducer, 500mg tablets", cost: 12, frequency: 4 },
-  { name: "Diphenhydramine", description: "Antihistamine, Sleep aid, 25mg tablets", cost: 10, frequency: 1 },
-  { name: "Loratadine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 14, frequency: 1 },
-  { name: "Cetirizine", description: "Antihistamine, Allergy relief, 10mg tablets", cost: 13, frequency: 1 },
-  { name: "Amoxicillin", description: "Antibiotic, 500mg capsules", cost: 35, frequency: 3 },
-  { name: "Azithromycin", description: "Antibiotic, 250mg tablets", cost: 40, frequency: 1 },
-  { name: "Cephalexin", description: "Antibiotic, 500mg capsules", cost: 32, frequency: 4 },
-  { name: "Albuterol", description: "Asthma inhaler", cost: 25, frequency: 2 },
-  { name: "Salbutamol", description: "Asthma inhaler", cost: 22, frequency: 2 },
-  { name: "Prednisone", description: "Steroid, 5mg tablets", cost: 30, frequency: 1 },
-  { name: "Fluticasone", description: "Steroid inhaler", cost: 28, frequency: 2 },
-  { name: "Metformin", description: "Diabetes medication, 500mg tablets", cost: 45, frequency: 2 },
-  { name: "Glimepiride", description: "Diabetes medication, 2mg tablets", cost: 42, frequency: 1 },
-  { name: "Insulin", description: "Diabetes medication (Varies by dose)", cost: 50, frequency: 3 },
-  { name: "Atorvastatin", description: "Cholesterol medication, 20mg tablets", cost: 38, frequency: 1 },
-  { name: "Simvastatin", description: "Cholesterol medication, 40mg tablets", cost: 40, frequency: 1 },
-  { name: "Rosuvastatin", description: "Cholesterol medication, 10mg tablets", cost: 35, frequency: 1 },
-  { name: "Lisinopril", description: "Blood pressure medication, 20mg tablets", cost: 28, frequency: 1 },
-  { name: "Hydrochlorothiazide", description: "Blood pressure medication, 25mg tablets", cost: 20, frequency: 1 },
-  { name: "Losartan", description: "Blood pressure medication, 50mg tablets", cost: 32, frequency: 1 },
-  { name: "Escitalopram", description: "Antidepressant, 10mg tablets", cost: 25, frequency: 1 },
-  { name: "Sertraline", description: "Antidepressant, 50mg tablets", cost: 30, frequency: 1 },
-  { name: "Fluoxetine", description: "Antidepressant, 20mg tablets", cost: 22, frequency: 1 },
-  { name: "Citalopram", description: "Antidepressant, 20mg tablets", cost: 28, frequency: 1 },
-  { name: "Lexapro", description: "Antidepressant (Escitalopram), 10mg tablets", cost: 25, frequency: 1 },
-  { name: "Zoloft", description: "Antidepressant (Sertraline), 50mg tablets", cost: 30, frequency: 1 },
-  { name: "Prozac", description: "Antidepressant (Fluoxetine), 20mg tablets", cost: 22, frequency: 1 },
-];

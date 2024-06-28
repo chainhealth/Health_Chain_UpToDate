@@ -355,36 +355,6 @@ loginSuccess() {
     echo "===================== Chaincode loginSuccess Finished ===================== "
 }
 
-# addUserPatient() {
-#     setGlobalsForPeer0ministryofhealth
-#     ./bin/peer chaincode invoke -o localhost:7050 \
-#         --ordererTLSHostnameOverride orderer.chainhealth.com \
-#         --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
-#         -C $CHANNEL_NAME -n ${CC_NAME} \
-#         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
-#         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
-#         --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
-#         --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
-#         -c '{"function": "addUser","Args":["something", "patient"]}'
-
-#     echo "===================== Chaincode addUserPatient Finished ===================== "
-# }
-
-# addUserPharmacy() {
-#     setGlobalsForPeer0ministryofhealth
-#     ./bin/peer chaincode invoke -o localhost:7050 \
-#         --ordererTLSHostnameOverride orderer.chainhealth.com \
-#         --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
-#         -C $CHANNEL_NAME -n ${CC_NAME} \
-#         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_pharmacy_CA \
-#         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_insurance_CA \
-#         --peerAddresses localhost:12051 --tlsRootCertFiles $PEER0_ministryofhealth_CA \
-#         --peerAddresses localhost:14051 --tlsRootCertFiles $PEER0_doctor_CA \
-#         -c '{"function": "addUser","Args":["something", "pharmacy"]}'
-
-#     echo "===================== Chaincode addUserPharmacy Finished ===================== "
-# }
-
 presetup
 sleep 3
 
@@ -423,86 +393,5 @@ sleep 5
 
 echo ""
 chaincodeQueryInit
-sleep 3
-
-echo ""
-getPatientRecordInsurance
-sleep 3
-
-echo ""
-getPatientRecordPharmacy
-sleep 3
-
-echo ""
-getPatientRecordDoctor
-sleep 3
-
-echo ""
-getPatientRecordMOH
-sleep 3
-
-echo ""
-getPatientRecordPatientError
-sleep 3
-
-echo ""
-writePatientPrescription
-sleep 3
-
-echo ""
-getPatientRecordDoctor
-sleep 3
-
-echo ""
-getPharmacyRecordError
-sleep 3
-
-echo ""
-getPharmacyRecord
-sleep 3
-
-echo ""
-confirmPrescriptionSalePharmacyError1
-sleep 3
-
-# echo ""
-# confirmPrescriptionSalePharmacy
-# sleep 3
-
-# echo ""
-# getPatientRecordMOH
-# sleep 3
-
-# echo ""
-# confirmPrescriptionSalePatient
-# sleep 3
-
-# echo ""
-# getPatientRecordMOH
-# sleep 3
-
-# echo ""
-# addUserPatient
-# sleep 3
-
-# echo ""
-# addUserPatient
-# sleep 3
-
-# echo ""
-# addUserPharmacy
-# sleep 3
-
-# echo ""
-# chaincodeQueryInit
-# sleep 3
-
-echo ""
-loginError
-sleep 3
-
-echo ""
-loginSuccess
-sleep 3
 
 echo "===================== Finished Program ===================== " 

@@ -36,27 +36,27 @@ Content-Type: application/json
 
 ###### Get homepage patient
 get http://localhost:3000/homePage HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5MTgwMzM1LCJleHAiOjE3MTkxODAzOTV9.b-rVy169gNxyBlWSSSpFtOxoUmytXiHhFrltQn-WuBE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5NjA3OTgxLCJleHAiOjE3MTk2MDk3ODF9.jO4dftM4uUIsBfcxPerx9EP4n1OslnybIIgGDFHlQp4
 Content-Type: application/json
 
 ###### Get homepage insurance
 get http://localhost:3000/homePage HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk2MDc5OTgsImV4cCI6MTcxOTYwOTc5OH0.57sJiqvchDJwDnIgbOCO3mSbC6wI5LCWjblaE-wnq2g
 Content-Type: application/json
 
 ###### Get homepage doctor
 get http://localhost:3000/homePage HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk2MDgwMjEsImV4cCI6MTcxOTYwOTgyMX0.a_QMVANswfxeh8nU-iTL_UPNxVZ_p5I1dvz-f7VoBWA
 Content-Type: application/json
 
 ###### Get homepage pharmacy
 get http://localhost:3000/homePage HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTYwODAzNCwiZXhwIjoxNzE5NjA5ODM0fQ.GGQGRLs-FNTZ4YUG5P_qa9mcCN7d8IfG8I_e61y60Dk
 Content-Type: application/json
 
 ####### Get prescription insurance
 POST http://localhost:3000/prescription HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk0NDQ2NTMsImV4cCI6MTcxOTQ0NjQ1M30.GT0JHoccidR_DF_sJTu3DyHvpCjZs_F5uzKAMRaWTc0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk2MDc5OTgsImV4cCI6MTcxOTYwOTc5OH0.57sJiqvchDJwDnIgbOCO3mSbC6wI5LCWjblaE-wnq2g
 Content-Type: application/json
 
 {
@@ -66,7 +66,7 @@ Content-Type: application/json
 
 ####### Get prescription doctor
 POST http://localhost:3000/prescription HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer .eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk2MDgwMjEsImV4cCI6MTcxOTYwOTgyMX0.a_QMVANswfxeh8nU-iTL_UPNxVZ_p5I1dvz-f7VoBWA
 Content-Type: application/json
 
 {
@@ -76,7 +76,7 @@ Content-Type: application/json
 
 ####### Get prescription patient
 POST http://localhost:3000/prescription HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5MTgwODY0LCJleHAiOjE3MTkxODA5MjR9.VYmfyVaKlwui6t097VnBHHROEHzdLeBmPhat8SeTiRY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5NjA3OTgxLCJleHAiOjE3MTk2MDk3ODF9.jO4dftM4uUIsBfcxPerx9EP4n1OslnybIIgGDFHlQp4
 Content-Type: application/json
 
 {
@@ -85,7 +85,7 @@ Content-Type: application/json
 
 ####### Get prescription pharmacy
 POST http://localhost:3000/prescription HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTYwODAzNCwiZXhwIjoxNzE5NjA5ODM0fQ.GGQGRLs-FNTZ4YUG5P_qa9mcCN7d8IfG8I_e61y60Dk
 Content-Type: application/json
 
 {
@@ -95,7 +95,7 @@ Content-Type: application/json
 
 ####### Get patient doctor
 GET http://localhost:3000/searchPatient?patientId=patient1 HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk2MTAwOTQsImV4cCI6MTcxOTYxMTg5NH0.441RqNUKr-C7gUtdduETJJbW1_TSVYGJAppC9fBhOy0
 Content-Type: application/json
 
 {
@@ -104,7 +104,7 @@ Content-Type: application/json
 
 ####### Get patient pharmacy
 GET http://localhost:3000/searchPatient?patientId=patient1 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTQ0MDk3MywiZXhwIjoxNzE5NDQyNzczfQ.EcB8pXquGBOH2oi4orqa0x-YhELQaBZu1rjcSv4srqI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTYxMDExMiwiZXhwIjoxNzE5NjExOTEyfQ.BThwVVUyOo_aGOKXm4KR1l3a29ETV_RdwpG0ixzOMIA
 Content-Type: application/json
 
 {
@@ -122,7 +122,7 @@ Content-Type: application/json
 
 ###### Insurance Claims Page
 GET http://localhost:3000/insuranceClaims HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk0NDM4MjgsImV4cCI6MTcxOTQ0NTYyOH0.1-1mKDr7cX_ktjPvssG1AjGZ_Gk6eFIG_LDxg9lBKNI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk2MTAwNzcsImV4cCI6MTcxOTYxMTg3N30.sfrYl8Uly9wgDD6U22RryFxOHM0OGcqUQkjh25VYCYU
 Content-Type: application/json
 
 {
@@ -131,7 +131,7 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy error (insurance cannot confirm)
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imluc3VyYW5jZTEiLCJpYXQiOjE3MTk2MTAwNzcsImV4cCI6MTcxOTYxMTg3N30.sfrYl8Uly9wgDD6U22RryFxOHM0OGcqUQkjh25VYCYU
 Content-Type: application/json
 
 {
@@ -141,7 +141,7 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy error (pres already purchased)
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTYxMDExMiwiZXhwIjoxNzE5NjExOTEyfQ.BThwVVUyOo_aGOKXm4KR1l3a29ETV_RdwpG0ixzOMIA
 Content-Type: application/json
 
 {
@@ -151,26 +151,17 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy success
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTYxMjA0MSwiZXhwIjoxNzE5NjEzODQxfQ.l-_Rdx0E-Y2w0VGzeDSD9NwSDpRjpwUoyXt_zIjJJ6c
 Content-Type: application/json
 
 {
     "patientId": "patient1",
-    "prescriptionId": "pres3"
-}
-
-####### Confirm presccription patient error (username is not a patient)
-POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
-Authorization: Bearer
-Content-Type: application/json
-
-{
-    "prescriptionId": "pres3"
+    "prescriptionId": "pres4"
 }
 
 ####### Confirm presccription patient error (pres already purchased)
 POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5NjEyMDU4LCJleHAiOjE3MTk2MTM4NTh9.dFxRDrC27fhdysAMGVDfVaivGHk8KErMpmYvWBPaOlg
 Content-Type: application/json
 
 {
@@ -180,17 +171,17 @@ Content-Type: application/json
 
 ####### Confirm presccription patient success
 POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5NjEyMDU4LCJleHAiOjE3MTk2MTM4NTh9.dFxRDrC27fhdysAMGVDfVaivGHk8KErMpmYvWBPaOlg
 Content-Type: application/json
 
 {
     "pharmacyId": "pharmacy1",
-    "prescriptionId": "pres3"
+    "prescriptionId": "pres4"
 }
 
 ####### Write prescription error (Not a doctor)
 POST http://localhost:3000/writePrescription HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer 
 Content-Type: application/json
 
 {
@@ -244,7 +235,7 @@ Content-Type: application/json
 
 ##### Write prescrition successfully
 POST http://localhost:3000/writePrescription HTTP/1.1
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk2MTIwNzIsImV4cCI6MTcxOTYxMzg3Mn0.M0Qkwm_sj1wdt__jMwF4BC05FPZb3j3hRIaLfIyKANA
 Content-Type: application/json
 
 {

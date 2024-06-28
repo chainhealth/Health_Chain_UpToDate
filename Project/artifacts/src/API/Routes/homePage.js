@@ -8,7 +8,7 @@ async function getHomePage(username) {
     const result = await contract.submitTransaction("getHomePage", username);
     return result;
   } catch (error) {
-    throw new Error(`Error during login: Invalid username or password!`);
+    throw new Error(`Error: ${error}`);
   }
 }
 
