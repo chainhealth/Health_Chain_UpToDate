@@ -493,6 +493,7 @@ class EHRContract extends Contract {
           insuranceState: patientRecord.insuranceInformation.state,
           remainingBalance: patientRecord.balance.remainingBalance,
           claimedBalance: patientRecord.balance.claimedBalance,
+          patientId: patientRecord.id,
         };
         userRecords.push(tempUser);
       }
