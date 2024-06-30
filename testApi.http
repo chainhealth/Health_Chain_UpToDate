@@ -36,7 +36,7 @@ Content-Type: application/json
 
 ###### Get homepage patient
 get http://localhost:3000/homePage HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5NjA3OTgxLCJleHAiOjE3MTk2MDk3ODF9.jO4dftM4uUIsBfcxPerx9EP4n1OslnybIIgGDFHlQp4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5NzIxNjQ1LCJleHAiOjE3MTk3MjM0NDV9.-GoDY4RbV6_ELxsb12hn5tZ20m2AmoRTSgET_TXwNIY
 Content-Type: application/json
 
 ###### Get homepage insurance
@@ -104,7 +104,7 @@ Content-Type: application/json
 
 ####### Get patient pharmacy
 GET http://localhost:3000/searchPatient?patientId=patient1 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTYxMDExMiwiZXhwIjoxNzE5NjExOTEyfQ.BThwVVUyOo_aGOKXm4KR1l3a29ETV_RdwpG0ixzOMIA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTcyMTUyMCwiZXhwIjoxNzE5NzIzMzIwfQ.KxoHS5kTtcpE-C1R4BEw2I9qx6CCPpzEavfAfS50jnY
 Content-Type: application/json
 
 {
@@ -151,12 +151,12 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy success
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTYxMjA0MSwiZXhwIjoxNzE5NjEzODQxfQ.l-_Rdx0E-Y2w0VGzeDSD9NwSDpRjpwUoyXt_zIjJJ6c
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTcxOTYwNiwiZXhwIjoxNzE5NzIxNDA2fQ.eGkdOyQl8aQVrOiMFs2Ox8rmgo24bnuDD9UByVlEVfk
 Content-Type: application/json
 
 {
     "patientId": "patient1",
-    "prescriptionId": "pres4"
+    "prescriptionId": "pres2"
 }
 
 ####### Confirm presccription patient error (pres already purchased)
@@ -235,7 +235,7 @@ Content-Type: application/json
 
 ##### Write prescrition successfully
 POST http://localhost:3000/writePrescription HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk2MTIwNzIsImV4cCI6MTcxOTYxMzg3Mn0.M0Qkwm_sj1wdt__jMwF4BC05FPZb3j3hRIaLfIyKANA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk3MTgzMjQsImV4cCI6MTcxOTcyMDEyNH0.zJmsfgce9ec4uCOxOQsfS-SrxWdj4mWxHs9EW2zcs34
 Content-Type: application/json
 
 {
@@ -250,8 +250,23 @@ Content-Type: application/json
     }
 }
 
+##### Write prescrition successfully
+POST http://localhost:3000/writePrescription HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk3MjA4NzAsImV4cCI6MTcxOTcyMjY3MH0.9lsIbLF2mqhBCP13wuOwgZt2Vv8i2cczL7umCvFURhI
+Content-Type: application/json
+
+{
+    "patientId": "patient1",
+    "prescription": {
+        "report": "The patient has severe flu",
+        "medicine": [
+            {"name": "Ibuprofen", "dosage": "3", "frequency": "3"}
+        ]
+    }
+}
+
 
 ###### Get medicine List
 GET http://localhost:3000/medicines HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk2MTQxNjEsImV4cCI6MTcxOTYxNTk2MX0.05zQqUyZ8m-5SN8d9Yc_AXs1CFmRbQ0H3qHbFTmqBN8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk3MjA4NzAsImV4cCI6MTcxOTcyMjY3MH0.9lsIbLF2mqhBCP13wuOwgZt2Vv8i2cczL7umCvFURhI
 Content-Type: application/json

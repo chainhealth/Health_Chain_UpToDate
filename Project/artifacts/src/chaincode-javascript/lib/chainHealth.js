@@ -441,8 +441,8 @@ class EHRContract extends Contract {
         const temp = {
           medicineName: foundMedicine.name,
           description: foundMedicine.description,
-          frequency: med.frequency,
-          dosage: med.dosage,
+          frequency: parseInt(med.frequency),
+          dosage: parseInt(med.dosage),
         };
         medicineArray.push(temp);
       } else {
