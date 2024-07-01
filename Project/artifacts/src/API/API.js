@@ -211,7 +211,7 @@ app.post("/writePrescription", async (req, res) => {
         patientId,
         JSON.stringify(prescription)
       );
-      res.status(200).send(`result: ${result}`);
+      res.status(200).json({result: result });
     } catch (error) {
       res.status(400).send(error.message);
     }
