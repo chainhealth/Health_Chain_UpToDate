@@ -95,7 +95,7 @@ Content-Type: application/json
 
 ####### Get patient doctor
 GET http://localhost:3000/searchPatient?patientId=patient1 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk2MTAwOTQsImV4cCI6MTcxOTYxMTg5NH0.441RqNUKr-C7gUtdduETJJbW1_TSVYGJAppC9fBhOy0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk3OTQ3ODYsImV4cCI6MTcxOTc5NjU4Nn0.IUlWofpetzdpVuCSlAb0Hn9rGkhcON4g-4pWhiaIVZ4
 Content-Type: application/json
 
 {
@@ -252,7 +252,7 @@ Content-Type: application/json
 
 ##### Write prescrition successfully
 POST http://localhost:3000/writePrescription HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk3MjA4NzAsImV4cCI6MTcxOTcyMjY3MH0.9lsIbLF2mqhBCP13wuOwgZt2Vv8i2cczL7umCvFURhI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk3OTQ4NTMsImV4cCI6MTcxOTc5NjY1M30.lp69uhpWUmORSBZ-jBTLij_ksbiZlia4r02luDWArUQ
 Content-Type: application/json
 
 {

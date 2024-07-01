@@ -384,6 +384,17 @@ class EHRContract extends Contract {
   _getPatientInfoByMSP(parsedData, clientMSP) {
     let info;
     switch (clientMSP) {
+      case "PharmacyMSP":
+        const prescription = this._createPrescriptionList(
+          parsedData.prescription
+        );
+        info = {
+          balance: parsedData.balance.remainingBalance,
+          prescription: prescription,
+          firstName: parsedData.personalInformation.firstName,
+          lastName: parsedData.personalInformation.lastName,
+        };
+        break;
       case "DoctorMSP":
         const age = this._calculateAge(
           parsedData.personalInformation.dateOfBirth
@@ -400,6 +411,7 @@ class EHRContract extends Contract {
           medications: parsedData.medicalHistory.medications,
           oldPrescription: prescIds,
         };
+        break;
       case "InsuranceMSP":
         info = {
           firstName: parsedData.personalInformation.firstName,
@@ -409,19 +421,8 @@ class EHRContract extends Contract {
           insuranceInformation: parsedData.insuranceInformation,
         };
         break;
-      case "PharmacyMSP":
-        const prescription = this._createPrescriptionList(
-          parsedData.prescription
-        );
-        info = {
-          balance: parsedData.balance.remainingBalance,
-          prescription: prescription,
-          firstName: parsedData.personalInformation.firstName,
-          lastName: parsedData.personalInformation.lastName,
-        };
-        break;
       default:
-        throw new Error("You don't have access to this record");
+        throw new Error("You don't have access to this record!");
     }
     return info;
   }
