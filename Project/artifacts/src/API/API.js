@@ -166,7 +166,7 @@ app.post("/confirmPrescriptionPharmacy", async (req, res) => {
         patientId,
         presId
       );
-      res.status(200).json({ result });
+      res.status(200).send(result);
     } catch (error) {
       res.status(400).send(error.message);
     }
@@ -186,7 +186,7 @@ app.post("/confirmPrescriptionPatient", async (req, res) => {
     const username = authenticationResults.username;
     try {
       const result = await confirmPrescriptionPatient(username, presId);
-      res.status(200).json({ result });
+      res.status(200).send(result);
     } catch (error) {
       res.status(400).send(error.message);
     }
@@ -211,7 +211,7 @@ app.post("/writePrescription", async (req, res) => {
         patientId,
         JSON.stringify(prescription)
       );
-      res.status(200).json({result: result });
+      res.status(200).json({ result: result });
     } catch (error) {
       res.status(400).send(error.message);
     }

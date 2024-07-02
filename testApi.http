@@ -151,12 +151,12 @@ Content-Type: application/json
 
 ####### Confirm presccription pharmacy success
 POST http://localhost:3000/confirmPrescriptionPharmacy HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTcxOTYwNiwiZXhwIjoxNzE5NzIxNDA2fQ.eGkdOyQl8aQVrOiMFs2Ox8rmgo24bnuDD9UByVlEVfk
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBoYXJtYWN5MSIsImlhdCI6MTcxOTkzODE3OCwiZXhwIjoxNzE5OTM5OTc4fQ.KCPd7bVKfpxtsaTMu8sXVEZeNUfpG4LY1KhXaQZIU-c
 Content-Type: application/json
 
 {
     "patientId": "patient1",
-    "prescriptionId": "pres2"
+    "prescriptionId": "pres4"
 }
 
 ####### Confirm presccription patient error (pres already purchased)
@@ -171,7 +171,7 @@ Content-Type: application/json
 
 ####### Confirm presccription patient success
 POST http://localhost:3000/confirmPrescriptionPatient HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5NjEyMDU4LCJleHAiOjE3MTk2MTM4NTh9.dFxRDrC27fhdysAMGVDfVaivGHk8KErMpmYvWBPaOlg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdGllbnQxIiwiaWF0IjoxNzE5OTM3MjI3LCJleHAiOjE3MTk5MzkwMjd9.dCTSjTs9pjv26IxycUgsWn41xDJcO5EhHj2cTa3ZcEM
 Content-Type: application/json
 
 {
@@ -252,7 +252,7 @@ Content-Type: application/json
 
 ##### Write prescrition successfully
 POST http://localhost:3000/writePrescription HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk3OTQ4NTMsImV4cCI6MTcxOTc5NjY1M30.lp69uhpWUmORSBZ-jBTLij_ksbiZlia4r02luDWArUQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRvY3RvcjEiLCJpYXQiOjE3MTk5Mzc4MjYsImV4cCI6MTcxOTkzOTYyNn0.o7ra0GMP9lb0LP3yOlARcyrk131AN_5D0oy9u7h32nI
 Content-Type: application/json
 
 {

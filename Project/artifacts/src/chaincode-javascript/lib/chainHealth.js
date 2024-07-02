@@ -216,14 +216,29 @@ class EHRContract extends Contract {
       if (prescription.state === "purchased") {
         throw new Error("Prescription is already purchased!");
       }
+      if (prescription.state === "rejected") {
+        throw new Error("Prescription is already rejected!");
+      }
 
-      // Placeholder for any checks needed
-      this._criteriaCheck(parsedPatientData);
-      // Encapsulated prescription confirmation data update logic
-      this._writeConfirmDataPharmacy(prescription, parsedPharmacyData);
+      const criteriaCheckResult = this._criteriaCheck(parsedPatientData);
+      if (criteriaCheckResult instanceof Error) {
+        this._writeConfirmDataPharmacy(
+          prescription,
+          parsedPharmacyData,
+          "rejected"
+        );
+
+        await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
+        return prescription;
+      }
+      this._writeConfirmDataPharmacy(
+        prescription,
+        parsedPharmacyData,
+        "confirmed"
+      );
 
       await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
-      return "Confirmed the prescription successfully!";
+      return prescription;
     } catch (error) {
       throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error.message);
     }
@@ -258,19 +273,29 @@ class EHRContract extends Contract {
       if (prescription.state === "purchased") {
         throw new Error("Prescription is alrady purchased!");
       }
+      if (prescription.state === "rejected") {
+        throw new Error("Prescription is alrady rejected!");
+      }
 
-      if (prescription.state !== "confirmed1") {
+      if (prescription.state !== "confirmed") {
         throw new Error("Prescription must be confirmed by pharmacy first!");
       }
-      await this._insuranceCheck(
+      const insuranceCheckResult = await this._insuranceCheck(
         ctx,
         parsedPatientData,
         prescription.medicines
       );
-      this._writeConfirmDataPatient(prescription);
+      if (insuranceCheckResult instanceof Error) {
+        //
+        this._writeConfirmDataPatient(prescription, "rejected");
+        await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
+        return prescription;
+      }
+
+      this._writeConfirmDataPatient(prescription, "purchased");
 
       await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
-      return "Confirmed the prescription successfully!";
+      return prescription;
     } catch (error) {
       throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error.message);
     }
@@ -481,8 +506,8 @@ class EHRContract extends Contract {
     }
   }
 
-  _writeConfirmDataPharmacy(prescription, parsedPharmacyData) {
-    prescription.state = "confirmed1";
+  _writeConfirmDataPharmacy(prescription, parsedPharmacyData, state) {
+    prescription.state = state;
     prescription.pharmacyName = parsedPharmacyData.pharmacyName;
     prescription.phramacyAddress = parsedPharmacyData.phramacyAddress;
   }
@@ -513,7 +538,7 @@ class EHRContract extends Contract {
       );
 
       if (patientData.balance.remainingBalance < totalPrescriptionCost) {
-        throw new Error("Insufficient balance!");
+        return new Error("Insufficient balance!");
       } else {
         patientData.balance.remainingBalance -= totalPrescriptionCost;
       }
@@ -522,8 +547,8 @@ class EHRContract extends Contract {
     }
   }
 
-  _writeConfirmDataPatient(prescription) {
-    prescription.state = "purchased";
+  _writeConfirmDataPatient(prescription, state) {
+    prescription.state = state;
   }
 
   _getPrescriptionById(prescriptions, prescriptionId) {
