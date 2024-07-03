@@ -290,12 +290,12 @@ class EHRContract extends Contract {
         this._writeConfirmDataPatient(prescription, "rejected");
         await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
         return prescription;
+      } else {
+        this._writeConfirmDataPatient(prescription, "purchased");
+
+        await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
+        return prescription;
       }
-
-      this._writeConfirmDataPatient(prescription, "purchased");
-
-      await ledger.writeRecord(ctx, parsedPatientData.id, parsedPatientData);
-      return prescription;
     } catch (error) {
       throw new Error(ERROR_MESSAGES.CONFIRM_PRESCRIPTION + error.message);
     }
