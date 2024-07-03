@@ -129,7 +129,7 @@ app.get("/searchPatient", async (req, res) => {
 });
 
 app.get("/insuranceClaims", async (req, res) => {
-  const patientId = req.body.patientId;
+  const patientId = req.query.patientId;
 
   if (!patientId) {
     return res.status(400).send("Missing required parameter(s)");
