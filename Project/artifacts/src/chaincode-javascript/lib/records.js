@@ -22,13 +22,17 @@ const patientRecords = [
       chronicDiseases: ["Diabetes", "High Blood Pressure"],
       allergies: ["Peanuts"],
       surgeries: ["Appendectomy in 2015"],
-      medications: [
-        {
-          name: "Metformin",
-          dosage: "500mg",
-          frequency: "Twice daily",
-        },
-      ],
+      medications: {
+        medicine: [
+          {
+            description: "Pain reliever, 200mg tablets",
+            dosage: 1,
+            frequency: 2,
+            medicineName: "Aspirin",
+          },
+        ],
+        report: "High Fever",
+      },
     },
     insuranceInformation: {
       provider: "Insurance Co.",
@@ -37,33 +41,32 @@ const patientRecords = [
     },
     prescription: [
       {
-        prescriptionID: "pres1",
-        state: "purchased",
-        issuingDoctor: "Dr. Smith",
+        issuingDoctor: "doctor1",
         medicines: [
           {
-            name: "Aspirin",
-            dosage: "325mg",
-            frequency: "Once daily as needed",
-          },
-          {
-            name: "Ibuprofen",
-            dosage: "200mg",
-            frequency: "Every 4-6 hours as needed",
+            description: "Pain reliever, 200mg tablets",
+            dosage: 1,
+            frequency: 2,
+            medicineName: "Aspirin",
           },
         ],
+        prescriptionID: "pres1",
+        report: "High Fever",
+        state: "purchased",
       },
       {
-        prescriptionID: "pres2",
-        state: "issued",
-        issuingDoctor: "Dr. Jones",
+        issuingDoctor: "doctor1",
         medicines: [
           {
-            name: "Aspirin",
-            dosage: "10mg",
-            frequency: "Once daily",
+            description: "Pain reliever, 200mg tablets",
+            dosage: 1,
+            frequency: 2,
+            medicineName: "Aspirin",
           },
         ],
+        prescriptionID: "pres2",
+        report: "High Fever",
+        state: "issued",
       },
     ],
     balance: {
@@ -93,13 +96,17 @@ const patientRecords = [
       chronicDiseases: ["Asthma"],
       allergies: ["Penicillin"],
       surgeries: ["None"],
-      medications: [
-        {
-          name: "Albuterol inhaler",
-          dosage: "2 puffs as needed",
-          frequency: "N/A",
-        },
-      ],
+      medications: {
+        medicine: [
+          {
+            description: "Pain reliever, 200mg tablets",
+            dosage: 1,
+            frequency: 2,
+            medicineName: "Aspirin",
+          },
+        ],
+        report: "High Fever",
+      },
     },
     insuranceInformation: {
       provider: "HealthCare Inc.",
@@ -108,28 +115,32 @@ const patientRecords = [
     },
     prescription: [
       {
-        prescriptionID: "pres1",
-        state: "purchased",
-        issuingDoctor: "Dr. Lee",
+        issuingDoctor: "doctor1",
         medicines: [
           {
-            name: "Amoxicillin",
-            dosage: "500mg",
-            frequency: "Twice daily for 7 days",
+            description: "Pain reliever, 200mg tablets",
+            dosage: 1,
+            frequency: 2,
+            medicineName: "Aspirin",
           },
         ],
+        prescriptionID: "pres1",
+        report: "High Fever",
+        state: "purchased",
       },
       {
-        prescriptionID: "pres2",
-        state: "purchased",
-        issuingDoctor: "Dr. Williams",
+        issuingDoctor: "doctor1",
         medicines: [
           {
-            name: "Flonase nasal spray",
-            dosage: "1 spray per nostril daily",
-            frequency: "As needed",
+            description: "Pain reliever, 200mg tablets",
+            dosage: 1,
+            frequency: 2,
+            medicineName: "Aspirin",
           },
         ],
+        prescriptionID: "pres2",
+        report: "High Fever",
+        state: "purchased",
       },
     ],
     balance: {

@@ -4,6 +4,8 @@ sudo docker system prune -f
 
 sudo docker volume prune -f
 
+./clean_docker_images.sh
+
 rm -rf ./chainHeath-ChainCode.tar.gz
 
 rm -rf ./artifacts/src/API/wallet

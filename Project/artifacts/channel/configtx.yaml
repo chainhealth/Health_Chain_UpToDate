@@ -178,9 +178,24 @@ Orderer: &OrdererDefaults # Orderer Type: The orderer implementation to start
         Port: 7050
         ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer.chainhealth.com/tls/server.crt
         ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer.chainhealth.com/tls/server.crt
+      - Host: ordere2.chainhealth.com
+        Port: 8050
+        ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer2.chainhealth.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer2.chainhealth.com/tls/server.crt
+      - Host: ordere3.chainhealth.com
+        Port: 9050
+        ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer3.chainhealth.com/tls/server.crt
+      - Host: ordere3.chainhealth.com
+        Port: 11050
+        ClientTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer4.chainhealth.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/chainhealth.com/orderers/orderer4.chainhealth.com/tls/server.crt
 
   Addresses:
     - orderer.chainhealth.com:7050
+    - orderer2.chainhealth.com:8050
+    - orderer3.chainhealth.com:9050
+    - orderer4.chainhealth.com:11050
 
   # amount of time to wait before creating a batch
   BatchTimeout: 2s
