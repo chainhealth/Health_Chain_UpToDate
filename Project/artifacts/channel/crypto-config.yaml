@@ -12,7 +12,6 @@ OrdererOrgs:
       - Hostname: orderer
       - Hostname: orderer2
       - Hostname: orderer3
-      - Hostname: orderer4
 
 PeerOrgs:
   - Name: Pharmacy

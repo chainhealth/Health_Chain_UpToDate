@@ -9,7 +9,7 @@ docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | while read -r line; 
         hyperledger/fabric-peer:latest|hyperledger/fabric-orderer:2.5|hyperledger/fabric-orderer:2.5.4|\
         hyperledger/fabric-orderer:latest|hyperledger/fabric-ccenv:2.5|hyperledger/fabric-ccenv:2.5.4|\
         hyperledger/fabric-ccenv:latest|hyperledger/fabric-baseos:2.5|hyperledger/fabric-baseos:2.5.4|\
-        hyperledger/fabric-baseos:latest|hyperledger/fabric-nodeenv:2.5|hyperledger/fabric-couchdb:0.4.22|frontend_prod|frontend_dev)
+        hyperledger/fabric-baseos:latest|hyperledger/fabric-nodeenv:2.5|hyperledger/fabric-couchdb:0.4.22|frontend_prod:latest|frontend_dev:latest)
             # Keep these images
             ;;
         *)

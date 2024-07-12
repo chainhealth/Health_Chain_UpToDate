@@ -4,7 +4,7 @@ function getUserPeer(username) {
   let connectionProfile = readCCP();
 
   if (!connectionProfile.users[username]) {
-    throw new Error("Wronggggg");
+    throw new Error("There is no user with this username!");
   }
   return connectionProfile.users[username].peer;
 }
