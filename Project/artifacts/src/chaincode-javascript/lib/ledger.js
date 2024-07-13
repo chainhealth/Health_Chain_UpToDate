@@ -37,7 +37,7 @@ class Ledger extends Contract {
     }
   }
 
-    /**
+  /**
    * Get MSPID
    * @param {Context} ctx The transaction context
    * @returns {string} The record MSPID
