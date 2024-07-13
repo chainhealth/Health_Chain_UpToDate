@@ -94,8 +94,6 @@ class Ledger extends Contract {
     }
     return JSON.stringify(allRecords);
   }
-
-  
 }
 
 module.exports = Ledger;
