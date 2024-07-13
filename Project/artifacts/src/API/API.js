@@ -3,7 +3,7 @@ require("dotenv").config();
 var morgan = require("morgan");
 const express = require("express");
 var bodyParser = require("body-parser");
-const cors = require("cors"); // Import cors
+const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const login = require("./Routes/login");
 const getHomePage = require("./Routes/homePage");

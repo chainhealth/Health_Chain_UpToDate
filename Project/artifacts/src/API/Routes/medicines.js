@@ -6,7 +6,9 @@ async function getMedicineList(username) {
     const identity = getUserPeer(username);
     const contract = await connectToNetwork(identity);
     const result = await contract.submitTransaction("getMedicineList");
-    return result;
+    const resultString = result.toString('utf8'); // Convert buffer to string
+    const resultJson = JSON.parse(resultString); // Parse string to JSON if it is in JSON format
+    return resultJson;
   } catch (error) {
     throw new Error(`Error: ${error.message}`);
   }
