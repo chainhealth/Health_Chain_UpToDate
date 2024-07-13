@@ -20,21 +20,6 @@ class Ledger extends Contract {
     }
   }
 
-  // Private method to convert iterator data to JSON
-  async _getIteratorData(iterator) {
-    const allRecords = [];
-    let result = await iterator.next();
-    while (!result.done) {
-      const strValue = Buffer.from(result.value.value.toString()).toString(
-        "utf8"
-      );
-      const record = JSON.parse(strValue);
-      allRecords.push(record);
-      result = await iterator.next();
-    }
-    return JSON.stringify(allRecords);
-  }
-
   /**
    * Retrievs all methods in the database
    * @param {Context} ctx The transaction context
@@ -52,7 +37,7 @@ class Ledger extends Contract {
     }
   }
 
-  /**
+    /**
    * Get MSPID
    * @param {Context} ctx The transaction context
    * @returns {string} The record MSPID
@@ -61,16 +46,6 @@ class Ledger extends Contract {
     const clientIdentity = new ClientIdentity(ctx.stub);
     const clientMSP = clientIdentity.getMSPID();
     return clientMSP;
-  }
-
-  // Private method to retrieve a specific record
-  async _getRecord(ctx, patientId) {
-    try {
-      const asset = await ctx.stub.getState(patientId);
-      return asset;
-    } catch (err) {
-      throw new Error("Error getting the requested record!");
-    }
   }
 
   /**
@@ -94,6 +69,33 @@ class Ledger extends Contract {
       throw new Error(error);
     }
   }
+
+  // Private method to retrieve a specific record
+  async _getRecord(ctx, patientId) {
+    try {
+      const asset = await ctx.stub.getState(patientId);
+      return asset;
+    } catch (err) {
+      throw new Error("Error getting the requested record!");
+    }
+  }
+
+  // Private method to convert iterator data to JSON
+  async _getIteratorData(iterator) {
+    const allRecords = [];
+    let result = await iterator.next();
+    while (!result.done) {
+      const strValue = Buffer.from(result.value.value.toString()).toString(
+        "utf8"
+      );
+      const record = JSON.parse(strValue);
+      allRecords.push(record);
+      result = await iterator.next();
+    }
+    return JSON.stringify(allRecords);
+  }
+
+  
 }
 
 module.exports = Ledger;
