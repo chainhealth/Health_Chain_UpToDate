@@ -109,13 +109,13 @@ services:
       - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
       - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
       - ORDERER_METRICS_PROVIDER=prometheus
-      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8440
       - ORDERER_GENERAL_LISTENPORT=7050
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderers
     command: orderer
     ports:
       - 7050:7050
-      - 8443:8443
+      - 8440:8440 # exposing metrics for prometheus
     networks:
       - test
     volumes:
@@ -144,13 +144,13 @@ services:
       - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
       - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
       - ORDERER_METRICS_PROVIDER=prometheus
-      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8441
       - ORDERER_GENERAL_LISTENPORT=8050
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderers
     command: orderer
     ports:
       - 8050:8050
-      - 8444:8443
+      - 8441:8441 # exposing metrics for prometheus
     networks:
       - test
     volumes:
@@ -185,7 +185,7 @@ services:
     command: orderer
     ports:
       - 9050:9050
-      - 8445:8443
+      - 8443:8443 # exposing metrics for prometheus
     networks:
       - test
     volumes:
@@ -303,7 +303,7 @@ services:
       # Exposed for discovery Service
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pharmacy.chainhealth.com:7051
 
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
 
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
@@ -319,6 +319,7 @@ services:
       - couchdb0
     ports:
       - 7051:7051
+      - 9440:9440 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer0.pharmacy.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer0.pharmacy.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
@@ -353,7 +354,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=couchdb1
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
       - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9441
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
@@ -363,6 +364,7 @@ services:
       - couchdb1
     ports:
       - 8051:8051
+      - 9441:9441 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer1.pharmacy.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/pharmacy.chainhealth.com/peers/peer1.pharmacy.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
@@ -397,7 +399,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=couchdb2
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
       - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9442
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
@@ -407,6 +409,7 @@ services:
       - couchdb2
     ports:
       - 9051:9051
+      - 9442:9442 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer0.insurance.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer0.insurance.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
@@ -441,7 +444,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=couchdb3
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
       - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
@@ -451,6 +454,7 @@ services:
       - couchdb3
     ports:
       - 10051:10051
+      - 9443:9443 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer1.insurance.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/insurance.chainhealth.com/peers/peer1.insurance.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
@@ -485,7 +489,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=couchdb4
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
       - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
@@ -495,6 +499,7 @@ services:
       - couchdb4
     ports:
       - 12051:12051
+      - 9444:9444 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer0.ministryofhealth.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer0.ministryofhealth.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
@@ -529,7 +534,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=couchdb5
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
       - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9445
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
@@ -539,6 +544,7 @@ services:
       - couchdb5
     ports:
       - 13051:13051
+      - 9445:9445 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer1.ministryofhealth.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/ministryofhealth.chainhealth.com/peers/peer1.ministryofhealth.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
@@ -573,7 +579,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=couchdb6
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
       - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9446
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
@@ -583,6 +589,7 @@ services:
       - couchdb6
     ports:
       - 14051:14051
+      - 9446:9446 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer0.doctor.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer0.doctor.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
@@ -617,7 +624,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=couchdb7
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
       - CORE_METRICS_PROVIDER=prometheus
-      # - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9440
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9447
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
@@ -627,10 +634,88 @@ services:
       - couchdb7
     ports:
       - 15051:15051
+      - 9447:9447 # exposing metrics for prometheus
     volumes:
       - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer1.doctor.chainhealth.com/msp:/etc/hyperledger/crypto/peer/msp
       - ./channel/crypto-config/peerOrganizations/doctor.chainhealth.com/peers/peer1.doctor.chainhealth.com/tls:/etc/hyperledger/crypto/peer/tls
       - /var/run/:/host/var/run/
       - ./channel/:/etc/hyperledger/channel/
+    networks:
+      - test
+
+  # node-exporter:
+  #   image: prom/node-exporter:latest
+  #   container_name: node-exporter
+  #   ports:
+  #     - "9100:9100"
+  #   networks:
+  #     - test
+
+  # cAdvisor for monitoring containers' cpu and mem
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+    - 8080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - test
+
+  # couchdb-exporter:
+  #   image: gesellix/couchdb-prometheus-exporter
+    
+  #   environment:
+  #     - couchdb.uri=http://couchdb0:5984
+  #     - couchdb.username=couchdb0
+  #     - couchdb.password=password
+
+  #   ports:
+  #     - 9104:9984
+  #   networks:
+  #     - test
+
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+    networks:
+      - test
+    depends_on:
+      - cadvisor
+ 
+  alertmanager:
+    image: quay.io/prometheus/alertmanager
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    env_file:
+      - .env
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+   
+    networks:
+      - test
+
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    environment:
+    - GF_AUTH_PROXY_ENABLED=true
+    - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning/
+    ports:
+      - "3333:3000"
+    volumes:
+      - ./provisioning:/var/lib/grafana
     networks:
       - test

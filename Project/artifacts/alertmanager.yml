@@ -1,0 +1,22 @@
+# use env vars to manage secrets
+global:
+  resolve_timeout: 5s
+
+route:
+  group_by: ['alertname']
+  group_wait: 5s
+  group_interval: 5s
+  repeat_interval: 10s
+  receiver: email-notifications
+
+receivers:
+  - name: 'email-notifications'
+    email_configs:
+    - to: 
+      from: 
+      smarthost:  
+      auth_username: 
+      auth_identity: 
+      auth_password: # app password
+      require_tls: true
+

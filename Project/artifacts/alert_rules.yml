@@ -1,0 +1,85 @@
+groups:
+  - name: hyperledger_fabric_alerts
+    rules:
+
+      # # for testing only
+      # - alert: TestAlert
+      #   expr: vector(1) # This will always evaluate to true
+      #   for: 0s
+      #   labels:
+      #     severity: critical
+      #   annotations:
+      #     summary: "Test alert triggered"
+      #     description: "This is a test alert to verify email notifications."
+
+      # # Working progress
+      # # Alert for CouchDB availability
+      # - alert: CouchDBDown
+      #   expr: up{job="hyperledger_fabric", instance=~".*couchdb.*"} == 0
+      #   for: 5m
+      #   labels:
+      #     severity: critical
+      #   annotations:
+      #     summary: "CouchDB instance {{ $labels.instance }} is down"
+      #     description: "CouchDB instance {{ $labels.instance }} has not responded for more than 5 minutes."
+
+      # Alert for Peer node availability
+      - alert: PeerNodeDown
+        expr: up{job="hyperledger_fabric", instance=~".*peer.*"} == 0
+        for: 1s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Peer node {{ $labels.instance }} is down"
+          description: "Peer node {{ $labels.instance }} has not responded for more than 1 minute."
+
+      # Alert for Orderer node availability
+      - alert: OrdererNodeDown
+        expr: up{job="hyperledger_fabric", instance=~".*orderer.*"} == 0
+        for: 1s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Orderer node {{ $labels.instance }} is down"
+          description: "Orderer node {{ $labels.instance }} has not responded for more than 1 minute."
+
+      # Alert for high CPU usage on Peer nodes
+      - alert: HighCPUUsage
+        expr: sum(rate(container_cpu_usage_seconds_total{job="hyperledger_fabric", image=~".*peer.*"}[5m])) by (instance) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 85% on {{ $labels.instance }}."
+
+      # Alert for high memory usage on Peer nodes
+      - alert: HighMemoryUsage
+        expr: sum(container_memory_usage_bytes{job="hyperledger_fabric", image=~".*peer.*"}) by (instance) / sum(container_spec_memory_limit_bytes{job="hyperledger_fabric", image=~".*peer.*"}) by (instance) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% on {{ $labels.instance }}."
+
+      # Alert for failed transactions
+      - alert: FailedTransactions
+        expr: rate(hyperledger_fabric_transaction_failure_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Failed transactions detected in Hyperledger Fabric"
+          description: "There have been failed transactions in the last 5 minutes."
+
+      # Alert for low block height on orderer nodes
+      - alert: LowBlockHeight
+        expr: (rate(hyperledger_fabric_orderer_block_height[5m]) < 1)
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low block height on {{ $labels.instance }}"
+          description: "Orderer node {{ $labels.instance }} is not producing new blocks."
+
