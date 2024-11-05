@@ -1,0 +1,62 @@
+# prometheus.yml
+global:
+  scrape_interval: 15s  # How often to scrape targets
+  evaluation_interval: 15s  # How often to evaluate rules
+  
+rule_files:
+  - './alert_rules.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+
+  - job_name: 'hyperledger_fabric'
+    static_configs:
+      - targets:
+          # Peer nodes
+          - 'peer0.pharmacy.chainhealth.com:9440'
+          - 'peer1.pharmacy.chainhealth.com:9441'
+          - 'peer0.insurance.chainhealth.com:9442'
+          - 'peer1.insurance.chainhealth.com:9443'
+          - 'peer0.ministryofhealth.chainhealth.com:9444'
+          - 'peer1.ministryofhealth.chainhealth.com:9445'
+          - 'peer0.doctor.chainhealth.com:9446'
+          - 'peer1.doctor.chainhealth.com:9447'
+
+          # Orderers
+          - 'orderer.chainhealth.com:8440'
+          - 'orderer2.chainhealth.com:8441'
+          - 'orderer3.chainhealth.com:8443'
+
+          # # CouchDB instances
+          # - 'couchdb0:5984'
+          # - 'couchdb1:6984'
+          # - 'couchdb2:7984'
+          # - 'couchdb3:8984'
+          # - 'couchdb4:9984'
+          # - 'couchdb5:10984'
+          # - 'couchdb6:11984'
+          # - 'couchdb7:12984'
+
+          # # CA servers
+          # - 'ca.ministryofhealth.chainhealth.com:12054'
+          # - 'ca.doctor.chainhealth.com:14054'
+          # - 'ca.insurance.chainhealth.com:8054'
+          # - 'ca.pharmacy.chainhealth.com:7054'
+
+  # - job_name: 'couchdb'
+  #   static_configs:
+  #     - targets: ['couchdb-exporter:9984']
+
+  # - job_name: 'node-exporter'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets:
+          - 'cadvisor:8080'
